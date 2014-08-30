@@ -1,21 +1,29 @@
-package utils
+package history
+
+// --- Imports
 
 import (
-	"time"
 	"strconv"
+	"time"
+
 	"github.com/glenn-brown/golang-pkg-pcre/src/pkg/pcre"
 )
 
+// --- Vars
+
 var historyLineRegex = pcre.MustCompile(`^:\s*(\d*)\s*:(\d*)\s*;(.*)`, 0)
+
+// --- Structs
 
 type historyScannerZsh struct {
 	historyScanner
 }
 
+// --- Methods
 
-func (hsb *historyScannerZsh) GetCommands() ([]HistoryCommand, error) {
-	for hsb.scanner.Scan() {
-		matcher := historyLineRegex.MatcherString(hsb.scanner.Text(), 0)
+func (hsz *historyScannerZsh) GetCommands() ([]HistoryCommand, error) {
+	for hsz.scanner.Scan() {
+		matcher := historyLineRegex.MatcherString(hsz.scanner.Text(), 0)
 
 		timestamp := matcher.GroupString(1)
 		command := matcher.GroupString(3)
@@ -25,16 +33,11 @@ func (hsb *historyScannerZsh) GetCommands() ([]HistoryCommand, error) {
 
 		commandTime := TimeNow
 		if parsed, err := strconv.Atoi(timestamp); err == nil {
-			commandTime = time.Unix(int64(parsed), 0)
+			commandTime = convertTimestamp(parsed)
 		}
 
-		parsedCommand := HistoryCommand{command, commandTime}
-		hsb.content = append(hsb.content, parsedCommand)
+		hsz.addCommand(command, commandTime)
 	}
 
-	if err := hsb.scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return hsb.content, nil
+	return hsz.finishScan()
 }

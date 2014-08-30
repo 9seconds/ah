@@ -1,18 +1,26 @@
-package utils
+package history
+
+// --- Imports
 
 import (
-	"time"
-	"strings"
 	"strconv"
+	"strings"
+	"time"
+
 	"github.com/glenn-brown/golang-pkg-pcre/src/pkg/pcre"
 )
 
+// --- Vars
+
 var timestampRegex = pcre.MustCompile(`^#'s*\d+$`, 0)
+
+// --- Structs
 
 type historyScannerBash struct {
 	historyScanner
 }
 
+// --- Methods
 
 func (hsb *historyScannerBash) GetCommands() ([]HistoryCommand, error) {
 	commandTime := TimeNow
@@ -23,17 +31,12 @@ func (hsb *historyScannerBash) GetCommands() ([]HistoryCommand, error) {
 
 		if matcher.MatchString(text, 0) {
 			if parsed, err := strconv.Atoi(text[1:]); err == nil {
-				commandTime = time.Unix(int64(parsed), 0)
+				commandTime = convertTimestamp(parsed)
 			}
 		} else {
-			parsedCommand := HistoryCommand{text, commandTime}
-			hsb.content = append(hsb.content, parsedCommand)
+			hsb.addCommand(text, commandTime)
 		}
 	}
 
-	if err := hsb.scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return hsb.content, nil
+	return hsb.finishScan()
 }

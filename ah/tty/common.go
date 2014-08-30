@@ -1,4 +1,6 @@
-package utils
+package tty
+
+// --- Imports
 
 import (
 	"runtime"
@@ -6,20 +8,40 @@ import (
 	"unsafe"
 )
 
+// --- Consts
+
 const (
 	TIOCGWINSZ_NIX = 0x5413
 	TIOCGWINSZ_OSX = 1074295912
+
+	DEFAULT_TERMINAL_WIDTH = 80
 )
 
-type TIOCGWINSZResponse struct {
+// --- Vars
+
+var TerminalWidth = DEFAULT_TERMINAL_WIDTH
+
+// --- Structs
+
+type tioResponse struct {
 	Row    uint16
 	Col    uint16
 	XPixel uint16
 	YPixel uint16
 }
 
-func getTerminalWindowResponse() (*TIOCGWINSZResponse, error) {
-	response := new(TIOCGWINSZResponse)
+// --- Init
+
+func init() {
+	if width, err := GetTerminalWidth(); err == nil {
+		TerminalWidth = width
+	}
+}
+
+// --- Funcs
+
+func getTerminalWidnowResponse() (*tioResponse, error) {
+	response := new(tioResponse)
 
 	tio := TIOCGWINSZ_NIX
 	if runtime.GOOS == "darwin" {
@@ -40,10 +62,9 @@ func getTerminalWindowResponse() (*TIOCGWINSZResponse, error) {
 }
 
 func GetTerminalWidth() (int, error) {
-	response, err := getTerminalWindowResponse()
-	if err != nil {
+	if response, err := getTerminalWidnowResponse(); err == nil {
+		return int(response.Col), nil
+	} else {
 		return 0, err
 	}
-
-	return int(response.Col), nil
 }

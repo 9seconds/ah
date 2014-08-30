@@ -1,52 +1,48 @@
-package utils
+package shell
 
+// --- Imports
 
 import (
-	"os"
 	"io"
+	"os"
 	"os/user"
 	"path"
-	"strings"
 	"path/filepath"
+	"strings"
 
 	"github.com/codeskyblue/go-sh"
+
+	"github.com/9seconds/ah/history"
 )
 
+// --- Consts
 
 type ShellType uint8
+
 const (
 	SHELL_BASH ShellType = iota
 	SHELL_ZSH  ShellType = iota
 )
 
+// --- Structs
 
 type Shell struct {
-	Type ShellType
-	Path string
+	Type     ShellType
+	Path     string
 	BaseName string
-	RC string
+	RC       string
 
 	shellSession *sh.Session
-	scanner HistoryScannerInterface
+	scanner      HistoryScannerInterface
 }
 
+// --- Methods
 
-func (s *Shell) Discover () {
+func (s *Shell) Discover() {
 	s.Path = os.Getenv("SHELL")
+	s.BaseName = s.getBaseName(s.Path)
 
-	absPath, absError := filepath.Abs(s.Path)
-	if absError != nil {
-		panic("Cannot understand what shell you are using")
-	}
-	if evalPath, evalError := filepath.EvalSymlinks(absPath); evalError == nil {
-		absPath = evalPath
-	}
-	s.BaseName = path.Base(absPath)
-
-	currentUser, currentUserError := user.Current()
-	if currentUserError != nil {
-		panic("Cannot get a current user")
-	}
+	currentUser := s.getCurrentUser()
 
 	if strings.Contains(s.BaseName, "zsh") {
 		s.Type = SHELL_ZSH
@@ -70,11 +66,6 @@ func (s *Shell) Run(command string) (string, error) {
 }
 
 func (s *Shell) GetEnv(env string) string {
-	fromEnv := os.Getenv(env)
-	if fromEnv != "" {
-		return fromEnv
-	}
-
 	msg, err := s.Run("echo -n $" + env)
 	if err == nil {
 		return msg
@@ -83,8 +74,30 @@ func (s *Shell) GetEnv(env string) string {
 	}
 }
 
-func (s *Shell) GetHistoryScanner (reader io.Reader) HistoryScannerInterface {
+func (s *Shell) GetHistoryScanner(reader io.Reader) HistoryScannerInterface {
 	s.scanner.Init(reader)
 	return s.scanner
 }
 
+func (s *Shell) getBaseName(shellPath string) string {
+	absPath, absError := filepath.Abs(shellPath)
+
+	if absError != nil {
+		panic("Cannot understand what shell you are using")
+	}
+	if evalPath, evalErr := filepath.EvalSymlinks(absPath); evalErr == nil {
+		absPath = evalPath
+	}
+
+	return path.Base(absPath)
+}
+
+func (s *Shell) getCurrentUser() user.User {
+	currentUser, currentUserError := user.Current()
+
+	if currentUserError != nil {
+		panic("Cannot get a current user")
+	}
+
+	return currentUser
+}

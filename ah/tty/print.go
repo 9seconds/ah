@@ -1,13 +1,15 @@
-package utils
+package tty
 
+// --- Imports
 
 import (
 	"fmt"
-	"unicode/utf8"
-	"strings"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 )
 
+// --- Funcs
 
 // Gentle TTY printer which undestands how to deal with different
 // terminal widths
@@ -32,49 +34,66 @@ func PrintFormatted(content [][]string, shrinkStatus []bool, padding int) {
 		return
 	}
 
-	maxLengths := make([]int, len(shrinkStatus), len(shrinkStatus))
+	lengths := fillLengths(content, shrinkStatus, padding)
+	templateParts := createTemplateParts(lengths, padding)
+	printTemplateParts(templateParts, content)
+}
+
+func fillLengths(content [][]string, shrinkStatus []bool, padding int) []int {
+	lengths := make([]int, len(shrinkStatus), len(shrinkStatus))
 	shrinkables := 0
 
 	for _, columns := range content {
 		for idx, col := range columns {
 			columnLength := utf8.RuneCountInString(col)
-			if maxLengths[idx] < columnLength {
-				maxLengths[idx] = columnLength
+			if lengths[idx] < columnLength {
+				lengths[idx] = columnLength
 			}
 		}
 	}
+
 	for _, status := range shrinkStatus {
 		if status {
 			shrinkables += 1
 		}
 	}
+
 	if shrinkables > 0 {
-		shrinkableLength := TerminalWidth - padding * len(content[0])
+		shrinkableLength := TerminalWidth - padding*len(content[0])
 		fmt.Println(shrinkableLength)
-		for idx, length := range maxLengths {
+		for idx, length := range lengths {
 			if !shrinkStatus[idx] {
 				shrinkableLength -= length
 			}
 		}
-        shrinkableLength /= shrinkables
+		shrinkableLength /= shrinkables
 
-		for idx := range maxLengths {
+		for idx := range lengths {
 			if shrinkStatus[idx] {
-				maxLengths[idx] = shrinkableLength
+				lengths[idx] = shrinkableLength
 			}
 		}
 	}
 
+	return lengths
+}
+
+func createTemplateParts(lengths []int, padding int) []string {
 	emptyArray := make([]string, padding, padding)
+	templateParts := make([]string, len(lengths), len(lengths))
+
 	paddedTemplate := strings.Join(emptyArray, " ")
 
-	templateParts := make([]string, len(maxLengths), len(maxLengths))
-	for idx, value := range maxLengths {
+	for idx, value := range lengths {
 		width := strconv.FormatInt(int64(value), 10)
 		templateParts[idx] = paddedTemplate + "%-" + width + "." + width + "s"
 	}
-	templateParts[len(templateParts)-1] += "\n"
+	templateParts[len(templateParts) - 1] += "\n"
 
+	return templateParts
+}
+
+func printTemplateParts(templateParts []string, content [][]string) {
 	for _, cols := range content {
 		for idx, col := range cols {
 			fmt.Printf(templateParts[idx], col)
