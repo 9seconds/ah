@@ -5,7 +5,6 @@ package history
 import (
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/glenn-brown/golang-pkg-pcre/src/pkg/pcre"
 )

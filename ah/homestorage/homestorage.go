@@ -52,6 +52,10 @@ func (hs *HomeStorage) Init() {
 }
 
 func (hs *HomeStorage) ReadConfig() {
+	if hs.read {
+		return
+	}
+
 	file, err := os.Open(hs.configFilePath)
 	if err != nil {
 		return
@@ -66,7 +70,7 @@ func (hs *HomeStorage) ReadConfig() {
 	}
 }
 
-func (hs *HomeStorage) GetKey(key string) (string, bool) {
+func (hs *HomeStorage) GetConfigKey(key string) (string, bool) {
 	if value, ok := hs.content[key]; ok {
 		return value, true
 	}
@@ -77,9 +81,10 @@ func (hs *HomeStorage) GetKey(key string) (string, bool) {
 	return value, ok
 }
 
-func (hs *HomeStorage) SetKey(key string, value string) {
+func (hs *HomeStorage) SetConfigKey(key string, value string) {
 	hs.ReadConfig()
 	hs.content[key] = value
+	hs.read = false
 
 	file, err := os.Create(hs.configFilePath)
 	if err != nil {

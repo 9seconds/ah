@@ -8,9 +8,9 @@ import (
 	"time"
 )
 
-// --- Constants
+// --- Vars
 
-const TimeNow = time.Now()
+var TimeNow time.Time
 
 // --- Structs
 
@@ -29,6 +29,12 @@ type historyScanner struct {
 type HistoryScannerInterface interface {
 	Init(io.Reader)
 	GetCommands() ([]HistoryCommand, error)
+}
+
+// --- Init
+
+func init() {
+	TimeNow = time.Now()
 }
 
 // --- Methods
