@@ -1,4 +1,4 @@
-package history
+package ah
 
 // --- Imports
 
@@ -39,9 +39,9 @@ func init() {
 
 // --- Methods
 
-func (hs *historyScanner) Init(reader io.Reader, historySize int) {
+func (hs *historyScanner) Init(reader io.Reader) {
 	hs.scanner = bufio.NewScanner(reader)
-	hs.content = make([]HistoryCommand, 0, historySize)
+	hs.content = make([]HistoryCommand, 0, 5000)
 }
 
 func (hs *historyScanner) addCommand(command string, timestamp time.Time) {

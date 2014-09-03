@@ -1,25 +1,20 @@
-package cache
+package ah
 
 import (
 	"os"
-	"github.com/9seconds/ah/homestorage"
-	"github.com/9seconds/ah/shell"
 )
 
-
 type Cache struct {
-	homeStorage *homestorage.HomeStorage
-	shell *shell.Shell
+	homeStorage *HomeStorage
+	shell       *Shell
 }
 
-
-func (c *Cache) Init(homeStorage *homestorage.HomeStorage, shell *shell.Shell) {
+func (c *Cache) Init(homeStorage *HomeStorage, shell *Shell) {
 	c.homeStorage = homeStorage
 	c.shell = shell
 
 	c.shell.Discover()
 }
-
 
 func (c *Cache) GetConfigKey(key string) string {
 	value := os.Getenv(key)

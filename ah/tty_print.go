@@ -1,4 +1,4 @@
-package tty
+package ah
 
 // --- Imports
 
@@ -88,7 +88,7 @@ func createTemplateParts(lengths []int, padding int) []string {
 		width := strconv.FormatInt(int64(value), 10)
 		templateParts[idx] = paddedTemplate + "%-" + width + "." + width + "s"
 	}
-	templateParts[len(templateParts) - 1] += "\n"
+	templateParts[len(templateParts)-1] += "\n"
 
 	return templateParts
 }

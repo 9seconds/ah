@@ -1,4 +1,4 @@
-package shell
+package ah
 
 // --- Imports
 
@@ -11,8 +11,6 @@ import (
 	"strings"
 
 	"github.com/codeskyblue/go-sh"
-
-	"github.com/9seconds/ah/ah/history"
 )
 
 // --- Consts
@@ -47,11 +45,11 @@ func (s *Shell) Discover() {
 	if strings.Contains(s.BaseName, "zsh") {
 		s.Type = SHELL_ZSH
 		s.RC = path.Join(currentUser.HomeDir, ".zshrc")
-		s.scanner = new(history.historyScannerZsh)
+		s.scanner = new(historyScannerZsh)
 	} else if strings.Contains(s.BaseName, "bash") {
 		s.Type = SHELL_BASH
 		s.RC = path.Join(currentUser.HomeDir, ".bashrc")
-		s.scanner = new(history.historyScannerBash)
+		s.scanner = new(historyScannerBash)
 	} else {
 		panic("Unknown shell type. ah supports only bash and zsh")
 	}
@@ -92,7 +90,7 @@ func (s *Shell) getBaseName(shellPath string) string {
 	return path.Base(absPath)
 }
 
-func (s *Shell) getCurrentUser() user.User {
+func (s *Shell) getCurrentUser() *user.User {
 	currentUser, currentUserError := user.Current()
 
 	if currentUserError != nil {
