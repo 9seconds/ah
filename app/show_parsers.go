@@ -54,7 +54,7 @@ func parseZsh(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, er
 		if timestamp == "" || command == "" {
 			continue
 		}
-		if filter != nil && filter.MatchString(command) {
+		if filter != nil && !filter.MatchString(command) {
 			continue
 		}
 
