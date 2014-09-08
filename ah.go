@@ -27,6 +27,9 @@ const (
 	APP_DIR_DESCRIPTION = "An ah's directory for own storage"
 
 	SHOW_CMD_DESCRIPTION       = "Shows an enhanced history of your commands."
+	SHOW_CMD_GREP_DESCRIPTION  = "Filter output by given regular expression."
+	SHOW_CMD_FUZZY_DESCRIPTION = "Interpret grep expression as fuzzy search " +
+		"string instead of regular expression."
 	SHOW_CMD_SLICE_DESCRIPTION = "Basically it could be a single argument " +
 		"or a slice. Let's say it is 20. Then ah will show you 20 latest " +
 		"records. So it is an equialent of :-20. What does negative number " +
@@ -55,14 +58,16 @@ var (
 	shell_flavour = application.Flag("shell", SHELL_FLAVOUR_DESRIPTION).
 			Short('s').
 			String()
-	app_path = application.Flag("dir", APP_DESCRIPTION).
+	app_path = application.Flag("dir", APP_DIR_DESCRIPTION).
 			Default(APP_DIR).
 			String()
 
 	show      = application.Command("s", SHOW_CMD_DESCRIPTION)
-	show_grep = show.Flag("grep", "Filter output by given regular expression").
+	show_grep = show.Flag("grep", SHOW_CMD_GREP_DESCRIPTION).
 			Short('g').
 			String()
+	show_fuzzy = show.Flag("fuzzy", SHOW_CMD_FUZZY_DESCRIPTION).
+			Short('f').Bool()
 	show_arg = show.Arg("slice", SHOW_CMD_SLICE_DESCRIPTION).
 			String()
 )
