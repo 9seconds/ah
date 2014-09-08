@@ -2,6 +2,7 @@ package app
 
 import (
 	"bufio"
+	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -11,13 +12,22 @@ var (
 	bashTimestampRegexp = regexp.MustCompile(`^#'s*\d+$`)
 	zshLineRegexp       = regexp.MustCompile(`^:\s*(\d*)\s*:(\d*)\s*;(.*)`)
 
-	defaultEventsCapacity = 5000
+	eventsCapacity = 5000
 )
+
+func init() {
+	histFileSize := os.Getenv("HISTFILESIZE")
+	if histFileSize != "" {
+		if converted, err := strconv.Atoi(histFileSize); err == nil && converted > 0 {
+			eventsCapacity = converted
+		}
+	}
+}
 
 func parseBash(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error) {
 	currentTime := time.Now()
 	currentNumber := 1
-	events := make([]HistoryEntry, 0, defaultEventsCapacity)
+	events := make([]HistoryEntry, 0, eventsCapacity)
 
 	for scanner.Scan() {
 		text := scanner.Text()
@@ -41,7 +51,7 @@ func parseBash(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, e
 
 func parseZsh(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error) {
 	currentNumber := 1
-	events := make([]HistoryEntry, 0, defaultEventsCapacity)
+	events := make([]HistoryEntry, 0, eventsCapacity)
 
 	for scanner.Scan() {
 		matcher := zshLineRegexp.FindStringSubmatch(scanner.Text())
