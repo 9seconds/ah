@@ -131,7 +131,15 @@ func main() {
 
 		var filter *regexp.Regexp = nil
 		if *show_grep != "" {
-			filter = regexp.MustCompile(*show_grep)
+			query := *show_grep
+			if *show_fuzzy {
+				regex := ""
+				for idx := 0; idx < len(query); idx++ {
+					regex += ".*?" + regexp.QuoteMeta(string(query[idx]))
+				}
+				query = regex + ".*?"
+			}
+			filter = regexp.MustCompile(query)
 		}
 
 		app.CommandShow(slice, filter, &env)
