@@ -35,14 +35,17 @@ func parseBash(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, e
 			if converted, err := strconv.Atoi(text[1:]); err == nil {
 				currentTime = convertTimestamp(converted)
 			}
-		} else if filter.MatchString(text) {
-			newEvent := HistoryEntry{
-				Number:     currentNumber,
-				Command:    text,
-				Timestamp:  currentTime,
-				HasHistory: false} // HasHistory = false temporarily
-			events = append(events, newEvent)
-			currentNumber += 1
+			continue
+		} else {
+			if filter.MatchString(text) {
+				newEvent := HistoryEntry{
+					Number:     currentNumber,
+					Command:    text,
+					Timestamp:  currentTime,
+					HasHistory: false} // HasHistory = false temporarily
+				events = append(events, newEvent)
+			}
+			currentNumber++
 		}
 	}
 
@@ -64,6 +67,8 @@ func parseZsh(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, er
 		if timestamp == "" || command == "" {
 			continue
 		}
+		currentNumber++
+
 		if filter != nil && !filter.MatchString(command) {
 			continue
 		}
@@ -75,7 +80,6 @@ func parseZsh(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, er
 			Timestamp:  convertTimestamp(converted),
 			HasHistory: false} // HasHistory = false temporarily
 		events = append(events, newEvent)
-		currentNumber += 1
 	}
 
 	return scanEnd(scanner, events)

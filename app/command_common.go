@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -21,36 +22,46 @@ type Environment struct {
 	Shell          string
 }
 
-func ExtractSlice(argument string) (*Slice, error) {
+func ExtractSlice(single interface{}, start interface{}, finish interface{}) (*Slice, error) {
 	slice := new(Slice)
-	if argument == "" {
+
+	if single == nil && start == nil && finish == nil {
 		slice.Finish = -1
 		return slice, nil
 	}
 
-	matcher := sliceRegexp.FindStringSubmatch(argument)
-	if len(matcher) == 0 {
-		return nil, errors.New("Incorrect slice format")
-	}
-	for idx, v := range matcher {
-		matcher[idx] = strings.Replace(v, "_", "-", 1)
-	}
-	if matcher[1] != "" {
-		if int_value, result := strconv.Atoi(matcher[1]); result == nil {
-			slice.Finish = -1
-			slice.Start = -int_value
+	if single != nil {
+		singleStr := strings.Replace(single.(string), "_", "-", 1)
+		if singleInt, err := strconv.Atoi(singleStr); err == nil {
+			slice.Finish = singleInt
+			return slice, nil
 		} else {
-			return nil, result
-		}
-	}
-	if matcher[3] != "" {
-		if int_value, result := strconv.Atoi(matcher[3]); result == nil {
-			slice.Start = -slice.Start
-			slice.Finish = int_value
-		} else {
-			return nil, result
+			errToReturn := errors.New(fmt.Sprintf("Cannot convert lastNcommands to int: %v", err))
+			return slice, errToReturn
 		}
 	}
 
+	if start == nil || finish == nil {
+		err := errors.New("Cannot process slice commands")
+		return slice, err
+	}
+	startStr := strings.Replace(start.(string), "_", "-", 1)
+	finishStr := strings.Replace(finish.(string), "_", "-", 1)
+
+	startInt, startErr := strconv.Atoi(startStr)
+	if startErr != nil {
+		errToReturn := errors.New(fmt.Sprintf("Cannot process startFromNCommand: %v", startErr))
+		return slice, errToReturn
+	}
+	finishInt, finishErr := strconv.Atoi(finishStr)
+	if finishErr != nil {
+		errToReturn := errors.New(fmt.Sprintf("Cannot process finishByMCommand: %v", startErr))
+		return slice, errToReturn
+	}
+
+	slice.Start = startInt
+	slice.Finish = finishInt
+
 	return slice, nil
+
 }

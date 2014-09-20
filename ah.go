@@ -8,68 +8,51 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"gopkg.in/alecthomas/kingpin.v1"
+	"github.com/docopt/docopt-go"
 
 	"./app"
 )
 
-const (
-	APP_DESCRIPTION          = "ah - A Better history."
-	SHELL_FLAVOUR_DESRIPTION = "A shell flavour you are using." +
-		" Vaild options are \"bash\" and \"zsh\"." +
-		" By default ah tries to sniff what shell you are using and if you" +
-		" have a nonstandard setup, bash would be used."
-	HISTFILE_DESCRIPTION = "The path to your shell history file. " +
-		"No worries if you are not sure or just do not want to set it, " +
-		"ah will try to sniff. But it costs 1 interpreter start."
-	HISTTIMEFORMAT_DESCRIPTION = "If you want to set different time format " +
-		"of the history file, the best way to do it here"
-	APP_DIR_DESCRIPTION = "An ah's directory for own storage"
+const DOCOPT = `ah - A better history.
 
-	SHOW_CMD_DESCRIPTION       = "Shows an enhanced history of your commands."
-	SHOW_CMD_GREP_DESCRIPTION  = "Filter output by given regular expression."
-	SHOW_CMD_FUZZY_DESCRIPTION = "Interpret grep expression as fuzzy search " +
-		"string instead of regular expression."
-	SHOW_CMD_SLICE_DESCRIPTION = "Basically it could be a single argument " +
-		"or a slice. Let's say it is 20. Then ah will show you 20 latest " +
-		"records. So it is an equialent of :-20. What does negative number " +
-		"means? It is rather simple: n commands from the end so it is a " +
-		"shortcut of \"len(history)-20\". By default whole history would " +
-		"be shown."
-)
+Ah is a better way to traverse the history of your shell prompts. Right now it supports only 3 additional possibilities you are probably have dreamt about:
+    1. Good searching;
+    2. Better memoizing of entries;
+    3. Storing an output of the commands.
+
+Searching is done using 's' command. You may filter output or fetch a history slice you are wondering about. Filtering uses regular expressions or fuzzy matching out of box.
+
+Memoizing means that you have an ability to bookmark some favourite commands and use ah to store some sort of short snippets or ad-hoc shell scripts.
+
+And ah gives you a possibility to have a persistent storage of an output of any command you are executing. And you can return back to it any time you want.
+
+Usage:
+    ah [options] s [-z] [-g PATTERN] [<lastNcommands> | <startFromNCommand> <finishByMCommand>]
+    ah [options] b <commandNumber> <bookmarkAs>
+    ah [options] e <commandNumberOrBookMarkName>
+    ah [options] t [--] <command>...
+    ah [options] l <numberOfCommandYouWantToCheck>
+    ah (-h | --help)
+    ah --version
+
+Options:
+    -s SHELL, --shell=SHELL                               Shell flavour you are using. By default, ah will do some shallow investigations.
+    -f HISTFILE, --histfile=HISTFILE                      The path to a history file. By default ah will try to use default history file of your shell
+    -t HISTTIMEFORMAT, --histtimeformat=HISTTIMEFORMAT    A time format for history output. Will use $HISTTIMEFORMAT by default.
+    -d APPDIR, --appdir=APPDIR                            A place where ah has to store its data.
+    -g PATTERN, --grep PATTERN                            A pattern to filter command lines. It is regular expression if no -f option is set.
+    -z, --fuzzy                                           Interpret -g pattern as fuzzy match string.`
 
 const (
-	APP_DIR = "~/.ah"
+	DEFAULT_SHELL = "bash"
 )
 
 var (
-	HISTFILE_BASH = ".bash_history"
-	HISTFILE_ZSH  = ".zsh_history"
-)
+	DEFAULT_BASH_HISTFILE = ".bash_history"
+	DEFAULT_ZSH_HISTFILE  = ".zsh_history"
+	DEFAULT_APPDIR        = ".ah"
 
-var (
-	application = kingpin.New("ah", APP_DESCRIPTION)
-	histfile    = application.Flag("histfile", HISTFILE_DESCRIPTION).
-			Short('f').
-			String()
-	histtimeformat = application.Flag("histtimeformat", HISTTIMEFORMAT_DESCRIPTION).
-			Short('t').
-			String()
-	shell_flavour = application.Flag("shell", SHELL_FLAVOUR_DESRIPTION).
-			Short('s').
-			String()
-	app_path = application.Flag("dir", APP_DIR_DESCRIPTION).
-			Default(APP_DIR).
-			String()
-
-	show      = application.Command("s", SHOW_CMD_DESCRIPTION)
-	show_grep = show.Flag("grep", SHOW_CMD_GREP_DESCRIPTION).
-			Short('g').
-			String()
-	show_fuzzy = show.Flag("fuzzy", SHOW_CMD_FUZZY_DESCRIPTION).
-			Short('f').Bool()
-	show_arg = show.Arg("slice", SHOW_CMD_SLICE_DESCRIPTION).
-			String()
+	CURRENT_USER *user.User
 )
 
 func init() {
@@ -78,9 +61,8 @@ func init() {
 		os.Stderr.WriteString(fmt.Sprintf("Impossible to detect current user\n"))
 		os.Exit(1)
 	}
+	CURRENT_USER = currentUser
 
-	HISTFILE_BASH = filepath.Join(currentUser.HomeDir, HISTFILE_BASH)
-	HISTFILE_ZSH = filepath.Join(currentUser.HomeDir, HISTFILE_ZSH)
 }
 
 func main() {
@@ -91,51 +73,71 @@ func main() {
 		}
 	}()
 
-	command := kingpin.MustParse(application.Parse(os.Args[1:]))
+	DEFAULT_BASH_HISTFILE = filepath.Join(CURRENT_USER.HomeDir, DEFAULT_BASH_HISTFILE)
+	DEFAULT_ZSH_HISTFILE = filepath.Join(CURRENT_USER.HomeDir, DEFAULT_ZSH_HISTFILE)
+	DEFAULT_APPDIR = filepath.Join(CURRENT_USER.HomeDir, DEFAULT_APPDIR)
+
+	arguments, err := docopt.Parse(DOCOPT, nil, true, "ah 0.1", false)
+	if err != nil {
+		panic(err)
+	}
 	env := app.Environment{}
 
-	env.Shell = *shell_flavour
-	if env.Shell == "" {
+	var argShell interface{} = arguments["--shell"]
+	if argShell == nil {
 		env.Shell = os.Getenv("SHELL")
+	} else {
+		env.Shell = argShell.(string)
 	}
 	env.Shell = path.Base(env.Shell)
 	if env.Shell != "zsh" && env.Shell != "bash" {
 		panic("Sorry, ah supports only bash and zsh")
 	}
 
-	env.HistFile = *histfile
-	if env.HistFile == "" {
+	var argHistFile interface{} = arguments["--histfile"]
+	if argHistFile == nil {
 		env.HistFile = os.Getenv("HISTFILE")
+	} else {
+		env.HistFile = argHistFile.(string)
 	}
 	if env.HistFile == "" {
 		if env.Shell == "bash" {
-			env.HistFile = HISTFILE_BASH
+			env.HistFile = DEFAULT_BASH_HISTFILE
 		} else {
-			env.HistFile = HISTFILE_ZSH
+			env.HistFile = DEFAULT_ZSH_HISTFILE
 		}
 	}
 
-	env.HistTimeFormat = *histtimeformat
-	if env.HistTimeFormat == "" {
+	var argHistTimeFormat interface{} = arguments["--histtimeformat"]
+	if argHistTimeFormat == nil {
 		env.HistTimeFormat = os.Getenv("HISTTIMEFORMAT")
+	} else {
+		env.HistTimeFormat = argHistTimeFormat.(string)
 	}
 
-	env.AppDir = *app_path
+	var argAppDir interface{} = arguments["--appdir"]
+	if argAppDir == nil {
+		env.AppDir = DEFAULT_APPDIR
+	} else {
+		env.AppDir = argAppDir.(string)
+	}
 
-	switch command {
-	case "s":
-		slice, err := app.ExtractSlice(*show_arg)
+	if arguments["s"].(bool) {
+		slice, err := app.ExtractSlice(
+			arguments["<lastNcommands>"],
+			arguments["<startFromNCommand>"],
+			arguments["<finishByMCommand>"])
 		if err != nil {
 			panic(err)
 		}
 
-		var filter *regexp.Regexp = nil
-		if *show_grep != "" {
-			query := *show_grep
-			if *show_fuzzy {
+		var filter *regexp.Regexp
+		if arguments["--grep"] != nil {
+			query := arguments["--grep"].(string)
+			if arguments["--fuzzy"].(bool) {
 				regex := ""
-				for idx := 0; idx < len(query); idx++ {
-					regex += ".*?" + regexp.QuoteMeta(string(query[idx]))
+				for _, character := range query {
+					regex += ".*?" + regexp.QuoteMeta(string(character))
 				}
 				query = regex + ".*?"
 			}
@@ -143,7 +145,9 @@ func main() {
 		}
 
 		app.CommandShow(slice, filter, &env)
-	default:
-		panic("Unknown command. Please specify at least one.")
+	} else if arguments["t"].(bool) {
+		fmt.Println("T")
+	} else {
+		panic("Unknown command. Please be more precise.")
 	}
 }
