@@ -50,7 +50,8 @@ func ExtractSlice(single interface{}, start interface{}, finish interface{}) (*S
 	if single != nil {
 		singleStr := strings.Replace(single.(string), "_", "-", 1)
 		if singleInt, err := strconv.Atoi(singleStr); err == nil {
-			slice.Finish = singleInt
+			slice.Start = -singleInt - 1
+			slice.Finish = -1
 			return slice, nil
 		} else {
 			errToReturn := errors.New(fmt.Sprintf("Cannot convert lastNcommands to int: %v", err))
