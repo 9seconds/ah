@@ -152,6 +152,10 @@ func main() {
 		commands := arguments["<command>"].([]string)
 
 		app.CommandTee(commands, &env)
+	} else if arguments["l"].(bool) {
+		command := arguments["<numberOfCommandYouWantToCheck>"].(string)
+
+		app.CommandListTrace(command, &env)
 	} else {
 		panic("Unknown command. Please be more precise.")
 	}
