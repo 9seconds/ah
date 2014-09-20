@@ -7,6 +7,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strconv"
 
 	"github.com/docopt/docopt-go"
 
@@ -51,6 +52,8 @@ var (
 	DEFAULT_BASH_HISTFILE = ".bash_history"
 	DEFAULT_ZSH_HISTFILE  = ".zsh_history"
 	DEFAULT_APPDIR        = ".ah"
+
+	VALIDATE_BOOKMARK_NAME = regexp.MustCompile(`^(\w|\d)+$`)
 
 	CURRENT_USER *user.User
 )
@@ -156,6 +159,19 @@ func main() {
 		command := arguments["<numberOfCommandYouWantToCheck>"].(string)
 
 		app.CommandListTrace(command, &env)
+	} else if arguments["b"].(bool) {
+		commandNumber := 0
+		if number, err := strconv.Atoi(arguments["<commandNumber>"].(string)); err != nil {
+			panic(fmt.Sprintf("Cannot understand command number: %s", commandNumber))
+		} else {
+			commandNumber = number
+		}
+		bookmarkAs := arguments["<bookmarkAs>"].(string)
+		if !VALIDATE_BOOKMARK_NAME.MatchString(bookmarkAs) {
+			panic("Incorrect bookmark name!")
+		}
+
+		app.CommandBookmark(commandNumber, bookmarkAs, &env)
 	} else {
 		panic("Unknown command. Please be more precise.")
 	}
