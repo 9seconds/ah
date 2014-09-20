@@ -3,8 +3,10 @@ package app
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/weidewang/go-strftime"
@@ -20,6 +22,9 @@ type HistoryEntry struct {
 type Parser func(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error)
 
 func getCommands(filter *regexp.Regexp, env *Environment) ([]HistoryEntry, error) {
+	historyChan := make(chan []int, 1)
+	go getHistoryEntries(env, historyChan)
+
 	var parse Parser
 	if env.Shell == "bash" {
 		parse = parseBash
@@ -35,6 +40,12 @@ func getCommands(filter *regexp.Regexp, env *Environment) ([]HistoryEntry, error
 
 	scanner := bufio.NewScanner(file)
 	if commands, err := parse(scanner, filter); err == nil {
+		histories := <-historyChan
+		for _, value := range histories {
+			if len(commands) > value {
+				commands[value-1].HasHistory = true
+			}
+		}
 		return commands, nil
 	} else {
 		return nil, err
@@ -47,6 +58,26 @@ func getSliceIndex(index int, length int) int {
 	} else {
 		return length + index
 	}
+}
+
+func getHistoryEntries(env *Environment, resultChan chan []int) {
+	entries := make([]int, 0, 16)
+
+	files, err := ioutil.ReadDir(env.GetTracesDir())
+	if err != nil {
+		resultChan <- entries
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		if number, err := strconv.Atoi(file.Name()); err == nil && number >= 0 {
+			entries = append(entries, number)
+		}
+	}
+
+	resultChan <- entries
 }
 
 func CommandShow(slice *Slice, filter *regexp.Regexp, env *Environment) {
