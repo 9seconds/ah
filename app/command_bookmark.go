@@ -14,10 +14,10 @@ func CommandBookmark(commandNumber int, bookmarkAs string, env *Environment) {
 	if err != nil {
 		panic(err)
 	}
-	if len(commands) < commandNumber {
+	if len(commands) < commandNumber-1 {
 		panic("Command number does not exist")
 	}
-	command := commands[commandNumber]
+	command := commands[commandNumber-1]
 	filename := env.GetBookmarkFileName(bookmarkAs)
 
 	file, err := os.Create(filename)

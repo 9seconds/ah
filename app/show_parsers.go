@@ -26,7 +26,7 @@ func init() {
 
 func parseBash(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error) {
 	currentTime := time.Now()
-	currentNumber := 1
+	currentNumber := 0
 	events := make([]HistoryEntry, 0, eventsCapacity)
 
 	for scanner.Scan() {
@@ -53,11 +53,13 @@ func parseBash(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, e
 }
 
 func parseZsh(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error) {
-	currentNumber := 1
+	currentNumber := 0
 	events := make([]HistoryEntry, 0, eventsCapacity)
 
 	for scanner.Scan() {
-		matcher := zshLineRegexp.FindStringSubmatch(scanner.Text())
+		text := scanner.Text()
+
+		matcher := zshLineRegexp.FindStringSubmatch(text)
 		if matcher == nil {
 			continue
 		}
