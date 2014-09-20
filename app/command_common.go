@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -20,6 +21,22 @@ type Environment struct {
 	HistFile       string
 	HistTimeFormat string
 	Shell          string
+}
+
+func (e *Environment) GetTracesDir() string {
+	return filepath.Join(e.AppDir, "traces")
+}
+
+func (e *Environment) GetBookmarksDir() string {
+	return filepath.Join(e.AppDir, "bookmarks")
+}
+
+func (e *Environment) GetTraceFileName(number int) string {
+	return filepath.Join(e.GetTracesDir(), strconv.Itoa(number))
+}
+
+func (e *Environment) GetBookmarkFileName(name string) string {
+	return filepath.Join(e.GetBookmarksDir(), name)
 }
 
 func ExtractSlice(single interface{}, start interface{}, finish interface{}) (*Slice, error) {

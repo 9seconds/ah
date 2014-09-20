@@ -122,6 +122,9 @@ func main() {
 		env.AppDir = argAppDir.(string)
 	}
 
+	os.MkdirAll(env.GetTracesDir(), 0777)
+	os.MkdirAll(env.GetBookmarksDir(), 0777)
+
 	if arguments["s"].(bool) {
 		slice, err := app.ExtractSlice(
 			arguments["<lastNcommands>"],
@@ -146,7 +149,9 @@ func main() {
 
 		app.CommandShow(slice, filter, &env)
 	} else if arguments["t"].(bool) {
-		fmt.Println("T")
+		commands := arguments["<command>"].([]string)
+
+		app.CommandTee(commands, &env)
 	} else {
 		panic("Unknown command. Please be more precise.")
 	}

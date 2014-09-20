@@ -19,7 +19,14 @@ type HistoryEntry struct {
 
 type Parser func(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error)
 
-func getCommands(parse Parser, filter *regexp.Regexp, env *Environment) ([]HistoryEntry, error) {
+func getCommands(filter *regexp.Regexp, env *Environment) ([]HistoryEntry, error) {
+	var parse Parser
+	if env.Shell == "bash" {
+		parse = parseBash
+	} else {
+		parse = parseZsh
+	}
+
 	file, err := os.Open(env.HistFile)
 	if err != nil {
 		panic(err)
@@ -43,14 +50,7 @@ func getSliceIndex(index int, length int) int {
 }
 
 func CommandShow(slice *Slice, filter *regexp.Regexp, env *Environment) {
-	var parse Parser
-	if env.Shell == "bash" {
-		parse = parseBash
-	} else {
-		parse = parseZsh
-	}
-
-	commands, err := getCommands(parse, filter, env)
+	commands, err := getCommands(filter, env)
 	sliceStart := getSliceIndex(slice.Start, len(commands))
 	sliceFinish := getSliceIndex(slice.Finish, len(commands))
 

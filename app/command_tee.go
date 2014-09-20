@@ -2,8 +2,8 @@ package app
 
 import (
 	"bufio"
-	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -84,22 +84,30 @@ func getCommandArgs(input []string) (string, []string) {
 	return command, args
 }
 
-func CommandTee(input []string) {
+func CommandTee(input []string, env *Environment) {
 	command, args := getCommandArgs(input)
-	fmt.Printf("\"%s %s\"\n", command, args)
 
+	output, err := ioutil.TempFile(os.TempDir(), "ah")
+	if err != nil {
+		panic("Cannot create temporary file")
+	}
+
+	doneChan := make(chan bool, 1)
 	toExecute := exec.Command(command, args...)
 	toExecuteStderr, _ := toExecute.StderrPipe()
 	toExecuteStdout, _ := toExecute.StdoutPipe()
-
-	output, _ := os.Create("output.log")
-	defer output.Close()
-
-	doneChan := make(chan bool, 1)
 	go connectAllPipes(toExecuteStdout, toExecuteStderr, output, doneChan)
 
-	err := toExecute.Run()
+	err = toExecute.Run()
 	<-doneChan
+	output.Close()
+
+	commands, err := getCommands(nil, env)
+	if err != nil {
+		panic("Sorry, cannot detect the number of the command")
+	}
+	os.Rename(output.Name(), env.GetTraceFileName(len(commands)))
+
 	if err != nil {
 		os.Exit(getStatusCode(err.(*exec.ExitError)))
 	}
