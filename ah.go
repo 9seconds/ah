@@ -53,7 +53,7 @@ var (
 	DEFAULT_ZSH_HISTFILE  = ".zsh_history"
 	DEFAULT_APPDIR        = ".ah"
 
-	VALIDATE_BOOKMARK_NAME = regexp.MustCompile(`^(\w|\d)+$`)
+	VALIDATE_BOOKMARK_NAME = regexp.MustCompile(`^\w(\w|\d)*$`)
 
 	CURRENT_USER *user.User
 )
@@ -172,6 +172,17 @@ func main() {
 		}
 
 		app.CommandBookmark(commandNumber, bookmarkAs, &env)
+	} else if arguments["e"].(bool) {
+		commandNumberOrBookMarkName := arguments["<commandNumberOrBookMarkName>"].(string)
+
+		if commandNumber, err := strconv.Atoi(commandNumberOrBookMarkName); err == nil {
+			app.CommandExecuteCommandNumber(commandNumber, &env)
+		} else if VALIDATE_BOOKMARK_NAME.MatchString(commandNumberOrBookMarkName) {
+			app.CommandExecuteBookMark(commandNumberOrBookMarkName, &env)
+			return
+		} else {
+			panic("Incorrect bookmark name! It should be started with alphabet letter, and alphabet or digits after!")
+		}
 	} else {
 		panic("Unknown command. Please be more precise.")
 	}

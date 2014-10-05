@@ -14,7 +14,7 @@ func CommandBookmark(commandNumber int, bookmarkAs string, env *Environment) {
 	if err != nil {
 		panic(err)
 	}
-	if len(commands) < commandNumber-1 {
+	if len(commands) <= commandNumber {
 		panic("Command number does not exist")
 	}
 	command := commands[commandNumber-1]

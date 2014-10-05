@@ -96,14 +96,15 @@ func CommandTee(input []string, env *Environment) {
 	toExecute := exec.Command(command, args...)
 	toExecuteStderr, _ := toExecute.StderrPipe()
 	toExecuteStdout, _ := toExecute.StdoutPipe()
+	toExecute.Stdin = os.Stdin
 	go connectAllPipes(toExecuteStdout, toExecuteStderr, output, doneChan)
 
 	err = toExecute.Run()
 	<-doneChan
 	output.Close()
 
-	commands, err := getCommands(nil, env)
-	if err != nil {
+	commands, err_ := getCommands(nil, env)
+	if err_ != nil {
 		panic("Sorry, cannot detect the number of the command")
 	}
 	os.Rename(output.Name(), env.GetTraceFileName(len(commands)))
