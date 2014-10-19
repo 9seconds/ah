@@ -3,18 +3,17 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/user"
-	"path"
-	"path/filepath"
 	"regexp"
 	"strconv"
 
-	"github.com/docopt/docopt-go"
+	docopt "github.com/docopt/docopt-go"
 
-	"./app"
+	"./app2/commands"
+	"./app2/environments"
+	"./app2/slices"
 )
 
-const DOCOPT = `ah - A better history.
+const OPTIONS = `ah - A better history.
 
 Ah is a better way to traverse the history of your shell prompts. Right now it supports only 3 additional possibilities you are probably have dreamt about:
     1. Good searching;
@@ -45,28 +44,14 @@ Options:
     -z, --fuzzy                                           Interpret -g pattern as fuzzy match string.`
 
 const (
-	DEFAULT_SHELL = "bash"
+	DEFAULT_APP_DIR = ".ah"
 )
 
 var (
-	DEFAULT_BASH_HISTFILE = ".bash_history"
-	DEFAULT_ZSH_HISTFILE  = ".zsh_history"
-	DEFAULT_APPDIR        = ".ah"
-
 	VALIDATE_BOOKMARK_NAME = regexp.MustCompile(`^\w(\w|\d)*$`)
-
-	CURRENT_USER *user.User
 )
 
-func init() {
-	currentUser, err := user.Current()
-	if err != nil {
-		os.Stderr.WriteString(fmt.Sprintf("Impossible to detect current user\n"))
-		os.Exit(1)
-	}
-	CURRENT_USER = currentUser
-
-}
+type executor func(arguments map[string]interface{}, env *environments.Environment)
 
 func main() {
 	defer func() {
@@ -76,114 +61,118 @@ func main() {
 		}
 	}()
 
-	DEFAULT_BASH_HISTFILE = filepath.Join(CURRENT_USER.HomeDir, DEFAULT_BASH_HISTFILE)
-	DEFAULT_ZSH_HISTFILE = filepath.Join(CURRENT_USER.HomeDir, DEFAULT_ZSH_HISTFILE)
-	DEFAULT_APPDIR = filepath.Join(CURRENT_USER.HomeDir, DEFAULT_APPDIR)
-
-	arguments, err := docopt.Parse(DOCOPT, nil, true, "ah 0.1", false)
+	arguments, err := docopt.Parse(OPTIONS, nil, true, "ah 0.1", false)
 	if err != nil {
 		panic(err)
 	}
-	env := app.Environment{}
 
-	var argShell interface{} = arguments["--shell"]
+	env := new(environments.Environment)
+
+	argShell := arguments["--shell"]
 	if argShell == nil {
-		env.Shell = os.Getenv("SHELL")
+		env.DiscoverShell()
 	} else {
-		env.Shell = argShell.(string)
-	}
-	env.Shell = path.Base(env.Shell)
-	if env.Shell != "zsh" && env.Shell != "bash" {
-		panic("Sorry, ah supports only bash and zsh")
+		env.SetShell(argShell.(string))
 	}
 
-	var argHistFile interface{} = arguments["--histfile"]
+	argHistFile := arguments["--histfile"]
 	if argHistFile == nil {
-		env.HistFile = os.Getenv("HISTFILE")
+		env.DiscoverHistFile()
 	} else {
-		env.HistFile = argHistFile.(string)
-	}
-	if env.HistFile == "" {
-		if env.Shell == "bash" {
-			env.HistFile = DEFAULT_BASH_HISTFILE
-		} else {
-			env.HistFile = DEFAULT_ZSH_HISTFILE
-		}
+		env.SetHistFile(argHistFile.(string))
 	}
 
-	var argHistTimeFormat interface{} = arguments["--histtimeformat"]
-	if argHistTimeFormat == nil {
-		env.HistTimeFormat = os.Getenv("HISTTIMEFORMAT")
-	} else {
-		env.HistTimeFormat = argHistTimeFormat.(string)
+	argHistTimeFormat := arguments["--histtimeformat"]
+	if argHistTimeFormat != nil {
+		env.SetHistTimeFormat(argHistTimeFormat.(string))
 	}
 
-	var argAppDir interface{} = arguments["--appdir"]
+	argAppDir := arguments["--appdir"]
 	if argAppDir == nil {
-		env.AppDir = DEFAULT_APPDIR
+		env.DiscoverAppDir()
 	} else {
-		env.AppDir = argAppDir.(string)
+		env.SetAppDir(argAppDir.(string))
 	}
 
 	os.MkdirAll(env.GetTracesDir(), 0777)
 	os.MkdirAll(env.GetBookmarksDir(), 0777)
 
-	if arguments["s"].(bool) {
-		slice, err := app.ExtractSlice(
-			arguments["<lastNcommands>"],
-			arguments["<startFromNCommand>"],
-			arguments["<finishByMCommand>"])
-		if err != nil {
-			panic(err)
-		}
-
-		var filter *regexp.Regexp
-		if arguments["--grep"] != nil {
-			query := arguments["--grep"].(string)
-			if arguments["--fuzzy"].(bool) {
-				regex := ""
-				for _, character := range query {
-					regex += ".*?" + regexp.QuoteMeta(string(character))
-				}
-				query = regex + ".*?"
-			}
-			filter = regexp.MustCompile(query)
-		}
-
-		app.CommandShow(slice, filter, &env)
-	} else if arguments["t"].(bool) {
-		commands := arguments["<command>"].([]string)
-
-		app.CommandTee(commands, &env)
+	var exec executor
+	if arguments["t"].(bool) {
+		exec = executeTee
+	} else if arguments["s"].(bool) {
+		exec = executeShow
 	} else if arguments["l"].(bool) {
-		command := arguments["<numberOfCommandYouWantToCheck>"].(string)
-
-		app.CommandListTrace(command, &env)
+		exec = executeListTrace
 	} else if arguments["b"].(bool) {
-		commandNumber := 0
-		if number, err := strconv.Atoi(arguments["<commandNumber>"].(string)); err != nil {
-			panic(fmt.Sprintf("Cannot understand command number: %s", commandNumber))
-		} else {
-			commandNumber = number
-		}
-		bookmarkAs := arguments["<bookmarkAs>"].(string)
-		if !VALIDATE_BOOKMARK_NAME.MatchString(bookmarkAs) {
-			panic("Incorrect bookmark name!")
-		}
-
-		app.CommandBookmark(commandNumber, bookmarkAs, &env)
+		exec = executeBookmark
 	} else if arguments["e"].(bool) {
-		commandNumberOrBookMarkName := arguments["<commandNumberOrBookMarkName>"].(string)
-
-		if commandNumber, err := strconv.Atoi(commandNumberOrBookMarkName); err == nil {
-			app.CommandExecuteCommandNumber(commandNumber, &env)
-		} else if VALIDATE_BOOKMARK_NAME.MatchString(commandNumberOrBookMarkName) {
-			app.CommandExecuteBookMark(commandNumberOrBookMarkName, &env)
-			return
-		} else {
-			panic("Incorrect bookmark name! It should be started with alphabet letter, and alphabet or digits after!")
-		}
+		exec = executeExec
 	} else {
-		panic("Unknown command. Please be more precise.")
+		panic("Unknown command. Please be more precise")
+	}
+	exec(arguments, env)
+}
+
+func executeTee(arguments map[string]interface{}, env *environments.Environment) {
+	cmds := arguments["<command>"].([]string)
+	commands.Tee(cmds, env)
+}
+
+func executeShow(arguments map[string]interface{}, env *environments.Environment) {
+	slice, err := slices.ExtractSlice(
+		arguments["<lastNcommands>"],
+		arguments["<startFromNCommand>"],
+		arguments["<finishByMCommand>"])
+	if err != nil {
+		panic(err)
+	}
+
+	var filter *regexp.Regexp
+	if arguments["--grep"] != nil {
+		query := arguments["--grep"].(string)
+		if arguments["--fuzzy"].(bool) {
+			regex := ""
+			for _, character := range query {
+				regex += ".*?" + regexp.QuoteMeta(string(character))
+			}
+			query = regex + ".*?"
+		}
+		filter = regexp.MustCompile(query)
+	}
+
+	commands.Show(slice, filter, env)
+}
+
+func executeListTrace(arguments map[string]interface{}, env *environments.Environment) {
+	cmd := arguments["<numberOfCommandYouWantToCheck>"].(string)
+	commands.ListTrace(cmd, env)
+}
+
+func executeBookmark(arguments map[string]interface{}, env *environments.Environment) {
+	var commandNumber int
+	if number, err := strconv.Atoi(arguments["<commandNumber>"].(string)); err != nil {
+		panic(fmt.Sprintf("Cannot understand command number: %s", commandNumber))
+	} else {
+		commandNumber = number
+	}
+
+	bookmarkAs := arguments["<bookmarkAs>"].(string)
+	if !VALIDATE_BOOKMARK_NAME.MatchString(bookmarkAs) {
+		panic("Incorrect bookmark name!")
+	}
+
+	commands.Bookmark(commandNumber, bookmarkAs, env)
+}
+
+func executeExec(arguments map[string]interface{}, env *environments.Environment) {
+	commandNumberOrBookMarkName := arguments["<commandNumberOrBookMarkName>"].(string)
+
+	if commandNumber, err := strconv.Atoi(commandNumberOrBookMarkName); err == nil {
+		commands.ExecuteCommandNumber(commandNumber, env)
+	} else if VALIDATE_BOOKMARK_NAME.MatchString(commandNumberOrBookMarkName) {
+		commands.ExecuteBookmark(commandNumberOrBookMarkName, env)
+	} else {
+		panic("Incorrect bookmark name! It should be started with alphabet letter, and alphabet or digits after!")
 	}
 }

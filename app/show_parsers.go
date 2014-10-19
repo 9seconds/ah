@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+
+	"../utils"
 )
 
 var (
@@ -33,7 +35,7 @@ func parseBash(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, e
 		text := scanner.Text()
 		if bashTimestampRegexp.MatchString(text) {
 			if converted, err := strconv.Atoi(text[1:]); err == nil {
-				currentTime = convertTimestamp(converted)
+				currentTime = utils.ConvertTimestamp(converted)
 			}
 			continue
 		} else {
@@ -79,16 +81,12 @@ func parseZsh(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, er
 		newEvent := HistoryEntry{
 			Number:     currentNumber,
 			Command:    command,
-			Timestamp:  convertTimestamp(converted),
+			Timestamp:  utils.ConvertTimestamp(converted),
 			HasHistory: false} // HasHistory = false temporarily
 		events = append(events, newEvent)
 	}
 
 	return scanEnd(scanner, events)
-}
-
-func convertTimestamp(timestamp int) time.Time {
-	return time.Unix(int64(timestamp), 0)
 }
 
 func scanEnd(scanner *bufio.Scanner, events []HistoryEntry) ([]HistoryEntry, error) {

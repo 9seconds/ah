@@ -4,7 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"strings"
+
+	"../utils"
 )
 
 func CommandExecuteCommandNumber(number int, env *Environment) {
@@ -21,7 +22,7 @@ func CommandExecuteCommandNumber(number int, env *Environment) {
 		panic("Cannot find such command!")
 	}
 	command := commands[number-1]
-	cmd, args := splitCommandToChunks(command.Command)
+	cmd, args := utils.SplitCommandToChunks(command.Command)
 
 	toExecute := exec.Command(cmd, args...)
 	toExecute.Stdout = os.Stdout
@@ -44,7 +45,7 @@ func CommandExecuteBookMark(name string, env *Environment) {
 		panic("Unknown bookmark")
 	}
 
-	cmd, args := splitCommandToChunks(string(content))
+	cmd, args := utils.SplitCommandToChunks(string(content))
 
 	toExecute := exec.Command(cmd, args...)
 	toExecute.Stdout = os.Stdout
@@ -59,13 +60,4 @@ func CommandExecuteBookMark(name string, env *Environment) {
 			panic(err.Error())
 		}
 	}
-}
-
-func splitCommandToChunks(cmd string) (string, []string) {
-	chunks := strings.Split(cmd, " ")
-	for idx := 0; idx < len(chunks); idx++ {
-		chunks[idx] = strings.Trim(chunks[idx], " \t")
-	}
-
-	return chunks[0], chunks[1:]
 }
