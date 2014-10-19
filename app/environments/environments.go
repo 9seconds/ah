@@ -3,6 +3,8 @@ package environments
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"os/user"
 	"path"
@@ -45,6 +47,7 @@ type Environment struct {
 	histFile       string
 	histTimeFormat string
 	shell          string
+	logger         *log.Logger
 }
 
 func (e *Environment) OK() bool {
@@ -150,4 +153,19 @@ func (e *Environment) FormatTime(timestamp *time.Time) (string, error) {
 		return "", err
 	}
 	return strftime.Strftime(timestamp, format), nil
+}
+
+func (e *Environment) GetLogger() (*log.Logger, error) {
+	if e.log == nil {
+		return nil, errors.New("Logger is not set yet")
+	}
+	return e.log, nil
+}
+
+func (e *Environment) EnableDebugLog() {
+	e.log = log.New(os.Stderr, "", log.Lshortfile)
+}
+
+func (e *Environment) DisableDebugLog() {
+	e.log = log.New(ioutil.Discard, "", 0)
 }

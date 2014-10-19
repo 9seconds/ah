@@ -41,7 +41,8 @@ Options:
     -t HISTTIMEFORMAT, --histtimeformat=HISTTIMEFORMAT    A time format for history output. Will use $HISTTIMEFORMAT by default.
     -d APPDIR, --appdir=APPDIR                            A place where ah has to store its data.
     -g PATTERN, --grep PATTERN                            A pattern to filter command lines. It is regular expression if no -f option is set.
-    -z, --fuzzy                                           Interpret -g pattern as fuzzy match string.`
+    -z, --fuzzy                                           Interpret -g pattern as fuzzy match string.
+	-v, --debug                                           Shows a debug log of command execution.`
 
 const (
 	DEFAULT_APP_DIR = ".ah"
@@ -92,6 +93,12 @@ func main() {
 		env.DiscoverAppDir()
 	} else {
 		env.SetAppDir(argAppDir.(string))
+	}
+
+	if arguments["--debug"].(bool) {
+		env.EnableDebugLog()
+	} else {
+		env.DisableDebugLog()
 	}
 
 	os.MkdirAll(env.GetTracesDir(), 0777)
