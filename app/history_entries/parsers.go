@@ -49,9 +49,18 @@ func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *re
 	events := prepareHistoryEntries()
 	currentEvent := HistoryEntry{}
 	continueToConsume := false
+	logger, _ := env.GetLogger()
+
+	logger.Debug("Parse Bash")
 
 	for scanner.Scan() {
 		text := scanner.Text()
+		logger.WithFields(logrus.Fields{
+			"currentEvent":      currentEvent,
+			"continueToConsume": continueToConsume,
+			"currentNumber":     currentNumber,
+			"text":              text,
+		}).Info("Parse new line")
 
 		if continueToConsume {
 			currentEvent.command += "\n" + text
@@ -59,13 +68,42 @@ func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *re
 				continue
 			}
 			continueToConsume = false
+
+			logger.WithFields(logrus.Fields{
+				"currentEvent":      currentEvent,
+				"continueToConsume": continueToConsume,
+				"currentNumber":     currentNumber,
+				"text":              text,
+			}).Info("Stop consuming")
+
 			events = append(events, currentEvent)
 			currentEvent = HistoryEntry{}
 		}
 
 		if bashTimestampRegexp.MatchString(text) {
+			logger.WithFields(logrus.Fields{
+				"currentEvent":      currentEvent,
+				"continueToConsume": continueToConsume,
+				"currentNumber":     currentNumber,
+				"text":              text,
+			}).Info("Matched timestamp")
 			if converted, err := strconv.Atoi(text[1:]); err == nil {
 				currentTime = converted
+				logger.WithFields(logrus.Fields{
+					"currentEvent":      currentEvent,
+					"continueToConsume": continueToConsume,
+					"currentNumber":     currentNumber,
+					"text":              text,
+					"currentTime":       converted,
+				}).Info("Set new current time")
+			} else {
+				logger.WithFields(logrus.Fields{
+					"currentEvent":      currentEvent,
+					"continueToConsume": continueToConsume,
+					"currentNumber":     currentNumber,
+					"text":              text,
+					"error":             err,
+				}).Warn("Cannot convert timestamp")
 			}
 		} else {
 			if filter.MatchString(text) {
@@ -78,10 +116,22 @@ func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *re
 					events = append(events, currentEvent)
 					currentEvent = HistoryEntry{}
 				}
+			} else {
+				logger.WithFields(logrus.Fields{
+					"currentEvent":      currentEvent,
+					"continueToConsume": continueToConsume,
+					"currentNumber":     currentNumber,
+					"text":              text,
+					"filter":            filter,
+				}).Warn("Ignored by filter")
 			}
 			currentNumber++
 		}
 	}
+
+	logger.WithFields(logrus.Fields{
+		"error": scanner.Err(),
+	}).Info("Finish scan")
 
 	return scanEnd(scanner, events)
 }
