@@ -3,6 +3,7 @@ package history_entries
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"regexp"
 	"strconv"
@@ -27,9 +28,10 @@ func GetCommands(filter *regexp.Regexp, env *environments.Environment) ([]Histor
 
 	if commands, err := getParser(env)(env, scanner, filter); err == nil {
 		histories := <-historyChan
-		for _, number := range histories {
-			if len(commands) > number {
-				commands[number-1].hasHistory = true
+		fmt.Println(histories)
+		for idx, _ := range commands {
+			if _, ok := histories[commands[idx].number]; ok {
+				commands[idx].hasHistory = true
 			}
 		}
 		return commands, nil
@@ -38,11 +40,11 @@ func GetCommands(filter *regexp.Regexp, env *environments.Environment) ([]Histor
 	}
 }
 
-func getHistoryEntriesChan(env *environments.Environment) chan []int {
-	historyChan := make(chan []int, 1)
+func getHistoryEntriesChan(env *environments.Environment) chan map[uint]bool {
+	historyChan := make(chan map[uint]bool, 1)
 
 	go func() {
-		entries := make([]int, 0, 16)
+		entries := make(map[uint]bool)
 		logger, _ := env.GetLogger()
 
 		files, err := ioutil.ReadDir(env.GetTracesDir())
@@ -64,7 +66,7 @@ func getHistoryEntriesChan(env *environments.Environment) chan []int {
 				logger.WithFields(logrus.Fields{
 					"number": number,
 				}).Debug("Add history trace to the list of entries")
-				entries = append(entries, number)
+				entries[uint(number)] = true
 			} else {
 				logger.WithFields(logrus.Fields{
 					"error":  err,
