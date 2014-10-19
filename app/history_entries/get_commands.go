@@ -63,13 +63,13 @@ func getHistoryEntriesChan(env *environments.Environment) chan []int {
 			if number, err := strconv.Atoi(file.Name()); err == nil && number >= 0 {
 				logger.WithFields(logrus.Fields{
 					"filename": file,
-					"number": number
+					"number":   number,
 				}).Debug("Add history trace to the list of entries")
 				entries = append(entries, number)
 			} else {
 				logger.WithFields(logrus.Fields{
-					"error": err,
-					"number": number
+					"error":  err,
+					"number": number,
 				}).Warn("Cannot add trace to the list of entries")
 			}
 		}
