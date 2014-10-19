@@ -6,24 +6,46 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"syscall"
+
+	pty "github.com/kr/pty"
 
 	"../environments"
 	"../history_entries"
 	"../utils"
 )
 
-func Tee(input []string, env *environments.Environment) {
+func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	output, err := ioutil.TempFile(os.TempDir(), "ah")
 	if err != nil {
 		panic("Cannot create temporary file")
 	}
 	bufferedOutput := bufio.NewWriter(output)
 
+	combinedStdout := io.MultiWriter(os.Stdout, bufferedOutput)
+	combinedStderr := io.MultiWriter(os.Stderr, bufferedOutput)
 	command := exec.Command(input[0], input[1:]...)
-	command.Stdin = os.Stdin
-	command.Stdout = io.MultiWriter(os.Stdout, bufferedOutput)
-	command.Stderr = io.MultiWriter(os.Stdout, bufferedOutput)
-	err = command.Run()
+
+	if pseudoTTY {
+		Stdin, Stdout, Stderr, ptyError := runPTYCommand(command)
+		if ptyError != nil {
+			output.Close()
+			panic(ptyError)
+		}
+		go io.Copy(Stdin, os.Stdin)
+		go io.Copy(combinedStdout, Stdout)
+		go io.Copy(combinedStderr, Stderr)
+	} else {
+		command.Stdin = os.Stdin
+		command.Stdout = combinedStdout
+		command.Stderr = combinedStderr
+		if startError := command.Start(); startError != nil {
+			output.Close()
+			panic(startError)
+		}
+	}
+
+	commandError := command.Wait()
 
 	bufferedOutput.Flush()
 	output.Close()
@@ -34,11 +56,46 @@ func Tee(input []string, env *environments.Environment) {
 	}
 	os.Rename(output.Name(), env.GetTraceFileName(len(commands)))
 
-	if err != nil {
-		if exitError, ok := err.(*exec.ExitError); ok {
+	if commandError != nil {
+		if exitError, ok := commandError.(*exec.ExitError); ok {
 			os.Exit(utils.GetStatusCode(exitError))
 		} else {
-			panic(err.Error())
+			panic(commandError.Error())
 		}
 	}
+}
+
+func runPTYCommand(cmd *exec.Cmd) (*os.File, *os.File, *os.File, error) {
+	in_pty, in_tty, in_err := pty.Open()
+	if in_err != nil {
+		return nil, nil, nil, in_err
+	}
+	defer in_tty.Close()
+
+	out_pty, out_tty, out_err := pty.Open()
+	if out_err != nil {
+		return nil, nil, nil, out_err
+	}
+	defer out_tty.Close()
+
+	err_pty, err_tty, err_err := pty.Open()
+	if err_err != nil {
+		return nil, nil, nil, err_err
+	}
+	defer err_tty.Close()
+
+	cmd.Stdin = in_tty
+	cmd.Stdout = out_tty
+	cmd.Stderr = err_tty
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setctty: true, Setsid: true}
+
+	err := cmd.Start()
+	if err != nil {
+		in_pty.Close()
+		out_pty.Close()
+		err_pty.Close()
+		return nil, nil, nil, err
+	}
+
+	return in_pty, out_pty, err_pty, nil
 }

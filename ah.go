@@ -31,7 +31,7 @@ Usage:
     ah [options] s [-z] [-g PATTERN] [<lastNcommands> | <startFromNCommand> <finishByMCommand>]
     ah [options] b <commandNumber> <bookmarkAs>
     ah [options] e <commandNumberOrBookMarkName>
-    ah [options] t [--] <command>...
+    ah [options] t [-y] [--] <command>...
     ah [options] l <numberOfCommandYouWantToCheck>
     ah (-h | --help)
     ah --version
@@ -42,7 +42,8 @@ Options:
     -t HISTTIMEFORMAT, --histtimeformat=HISTTIMEFORMAT    A time format for history output. Will use $HISTTIMEFORMAT by default.
     -d APPDIR, --appdir=APPDIR                            A place where ah has to store its data.
     -g PATTERN, --grep PATTERN                            A pattern to filter command lines. It is regular expression if no -f option is set.
-    -z, --fuzzy                                           Interpret -g pattern as fuzzy match string.
+    -y, --tty                                             Allocates pseudo-tty is necessary
+	-z, --fuzzy                                           Interpret -g pattern as fuzzy match string.
     -v, --debug                                           Shows a debug log of command execution.`
 
 const (
@@ -138,13 +139,15 @@ func main() {
 
 func executeTee(arguments map[string]interface{}, env *environments.Environment) {
 	cmds := arguments["<command>"].([]string)
+	tty := arguments["--tty"].(bool)
 
 	logger, _ := env.GetLogger()
 	logger.WithFields(logrus.Fields{
 		"command arguments": cmds,
+		"pseudo-tty":        tty,
 	}).Info("Arguments of 'tee'")
 
-	commands.Tee(cmds, env)
+	commands.Tee(cmds, tty, env)
 }
 
 func executeShow(arguments map[string]interface{}, env *environments.Environment) {
