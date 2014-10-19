@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	logrus "github.com/Sirupsen/logrus"
+
 	"../environments"
 )
 
@@ -91,9 +93,16 @@ func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *reg
 	continueToConsume := false
 	logger, _ := env.GetLogger()
 
+	logger.Debug("Parse ZSH")
+
 	for scanner.Scan() {
 		text := scanner.Text()
-		logger.Info("Got text line ", text)
+		logger.WithFields(logrus.Fields{
+			"currentEvent":      currentEvent,
+			"continueToConsume": continueToConsume,
+			"currentNumber":     currentNumber,
+			"text":              text,
+		}).Info("Parse new line")
 
 		if continueToConsume {
 			currentEvent.command += "\n" + text
@@ -101,23 +110,53 @@ func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *reg
 				continue
 			}
 			continueToConsume = false
+
+			logger.WithFields(logrus.Fields{
+				"currentEvent":      currentEvent,
+				"continueToConsume": continueToConsume,
+				"currentNumber":     currentNumber,
+				"text":              text,
+			}).Info("Stop consuming")
+
 			events = append(events, currentEvent)
 			currentEvent = HistoryEntry{}
 		}
 
 		matcher := zshLineRegexp.FindStringSubmatch(text)
 		if matcher == nil {
+			logger.WithFields(logrus.Fields{
+				"currentEvent":      currentEvent,
+				"continueToConsume": continueToConsume,
+				"currentNumber":     currentNumber,
+				"text":              text,
+				"regexp":            zshLineRegexp,
+			}).Info("Text does not match regexp")
 			continue
 		}
 
 		timestamp := matcher[1]
 		command := matcher[3]
 		if timestamp == "" || command == "" {
+			logger.WithFields(logrus.Fields{
+				"currentEvent":      currentEvent,
+				"continueToConsume": continueToConsume,
+				"currentNumber":     currentNumber,
+				"text":              text,
+				"regexp":            zshLineRegexp,
+				"matcher":           matcher,
+			}).Info("Timestamp and command are empty so skip.")
 			continue
 		}
 		currentNumber++
 
 		if filter != nil && !filter.MatchString(command) {
+			logger.WithFields(logrus.Fields{
+				"currentEvent":      currentEvent,
+				"continueToConsume": continueToConsume,
+				"currentNumber":     currentNumber,
+				"text":              text,
+				"filter":            filter,
+			}).Info("Ignored by filter.")
 			continue
 		}
 
@@ -132,6 +171,10 @@ func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *reg
 			currentEvent = HistoryEntry{}
 		}
 	}
+
+	logger.WithFields(logrus.Fields{
+		"error": scanner.Err(),
+	}).Info("Finish scan")
 
 	return scanEnd(scanner, events)
 }

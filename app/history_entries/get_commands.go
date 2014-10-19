@@ -56,14 +56,13 @@ func getHistoryEntriesChan(env *environments.Environment) chan []int {
 		for _, file := range files {
 			if file.IsDir() {
 				logger.WithFields(logrus.Fields{
-					"filename": file,
+					"filename": file.Name(),
 				}).Info("Skip file because it is directory")
 				continue
 			}
 			if number, err := strconv.Atoi(file.Name()); err == nil && number >= 0 {
 				logger.WithFields(logrus.Fields{
-					"filename": file,
-					"number":   number,
+					"number": number,
 				}).Debug("Add history trace to the list of entries")
 				entries = append(entries, number)
 			} else {
