@@ -42,7 +42,7 @@ func getParser(env *environments.Environment) Parser {
 }
 
 func parseBash(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error) {
-	currentNumber := 0
+	var currentNumber uint = 0
 	currentTime := 0
 	events := prepareHistoryEntries()
 	currentEvent := HistoryEntry{}
@@ -85,7 +85,7 @@ func parseBash(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, e
 }
 
 func parseZsh(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error) {
-	currentNumber := 0
+	var currentNumber uint = 0
 	events := prepareHistoryEntries()
 	currentEvent := HistoryEntry{}
 	continueToConsume := false

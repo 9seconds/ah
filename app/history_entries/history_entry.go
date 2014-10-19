@@ -15,13 +15,13 @@ const (
 )
 
 type HistoryEntry struct {
-	number     int
+	number     uint
 	command    string
 	timestamp  int
 	hasHistory bool
 }
 
-func (he HistoryEntry) GetNumber() (int, error) {
+func (he HistoryEntry) GetNumber() (uint, error) {
 	if he.number == 0 {
 		return 0, errors.New("Number is not set yet")
 	}
