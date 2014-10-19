@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 
+	logrus "github.com/Sirupsen/logrus"
 	docopt "github.com/docopt/docopt-go"
 
 	"./app/commands"
@@ -42,7 +43,7 @@ Options:
     -d APPDIR, --appdir=APPDIR                            A place where ah has to store its data.
     -g PATTERN, --grep PATTERN                            A pattern to filter command lines. It is regular expression if no -f option is set.
     -z, --fuzzy                                           Interpret -g pattern as fuzzy match string.
-	-v, --debug                                           Shows a debug log of command execution.`
+    -v, --debug                                           Shows a debug log of command execution.`
 
 const (
 	DEFAULT_APP_DIR = ".ah"
@@ -101,21 +102,35 @@ func main() {
 		env.DisableDebugLog()
 	}
 
-	os.MkdirAll(env.GetTracesDir(), 0777)
-	os.MkdirAll(env.GetBookmarksDir(), 0777)
+	logger, _ := env.GetLogger()
+	logger.WithFields(arguments).Debug("Arguments")
+	logger.Debug("Environment ", env)
+
+	logger.WithFields(logrus.Fields{
+		"error": os.MkdirAll(env.GetTracesDir(), 0777),
+	}).Info("Create traces dir")
+	logger.WithFields(logrus.Fields{
+		"error": os.MkdirAll(env.GetBookmarksDir(), 0777),
+	}).Info("Create bookmarks dir")
 
 	var exec executor
 	if arguments["t"].(bool) {
+		logger.Info("Execute command 'tee'")
 		exec = executeTee
 	} else if arguments["s"].(bool) {
+		logger.Info("Execute command 'show'")
 		exec = executeShow
 	} else if arguments["l"].(bool) {
+		logger.Info("Execute command 'listTrace'")
 		exec = executeListTrace
 	} else if arguments["b"].(bool) {
+		logger.Info("Execute command 'bookmark'")
 		exec = executeBookmark
 	} else if arguments["e"].(bool) {
+		logger.Info("Execute command 'execute'")
 		exec = executeExec
 	} else {
+		logger.Info("No valid choices", arguments)
 		panic("Unknown command. Please be more precise")
 	}
 	exec(arguments, env)
@@ -123,10 +138,18 @@ func main() {
 
 func executeTee(arguments map[string]interface{}, env *environments.Environment) {
 	cmds := arguments["<command>"].([]string)
+
+	logger, _ := env.GetLogger()
+	logger.WithFields(logrus.Fields{
+		"command arguments": cmds,
+	}).Info("Arguments of 'tee'")
+
 	commands.Tee(cmds, env)
 }
 
 func executeShow(arguments map[string]interface{}, env *environments.Environment) {
+	logger, _ := env.GetLogger()
+
 	slice, err := slices.ExtractSlice(
 		arguments["<lastNcommands>"],
 		arguments["<startFromNCommand>"],
@@ -148,11 +171,22 @@ func executeShow(arguments map[string]interface{}, env *environments.Environment
 		filter = regexp.MustCompile(query)
 	}
 
+	logger.WithFields(logrus.Fields{
+		"slice":  slice,
+		"filter": filter,
+	}).Info("Arguments of 'show'")
+
 	commands.Show(slice, filter, env)
 }
 
 func executeListTrace(arguments map[string]interface{}, env *environments.Environment) {
 	cmd := arguments["<numberOfCommandYouWantToCheck>"].(string)
+
+	logger, _ := env.GetLogger()
+	logger.WithFields(logrus.Fields{
+		"cmd": cmd,
+	}).Info("Arguments of 'listTrace'")
+
 	commands.ListTrace(cmd, env)
 }
 
@@ -169,15 +203,28 @@ func executeBookmark(arguments map[string]interface{}, env *environments.Environ
 		panic("Incorrect bookmark name!")
 	}
 
+	logger, _ := env.GetLogger()
+	logger.WithFields(logrus.Fields{
+		"commandNumber": commandNumber,
+		"bookmarkAs":    bookmarkAs,
+	}).Info("Arguments of 'bookmark'")
+
 	commands.Bookmark(commandNumber, bookmarkAs, env)
 }
 
 func executeExec(arguments map[string]interface{}, env *environments.Environment) {
 	commandNumberOrBookMarkName := arguments["<commandNumberOrBookMarkName>"].(string)
 
+	logger, _ := env.GetLogger()
+	logger.WithFields(logrus.Fields{
+		"commandNumberOrBookMarkName": commandNumberOrBookMarkName,
+	}).Info("Arguments of 'bookmark'")
+
 	if commandNumber, err := strconv.Atoi(commandNumberOrBookMarkName); err == nil {
+		logger.Info("Execute command number ", commandNumber)
 		commands.ExecuteCommandNumber(commandNumber, env)
 	} else if VALIDATE_BOOKMARK_NAME.MatchString(commandNumberOrBookMarkName) {
+		logger.Info("Execute bookmark ", commandNumberOrBookMarkName)
 		commands.ExecuteBookmark(commandNumberOrBookMarkName, env)
 	} else {
 		panic("Incorrect bookmark name! It should be started with alphabet letter, and alphabet or digits after!")

@@ -3,8 +3,6 @@ package environments
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"os"
 	"os/user"
 	"path"
@@ -12,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	logrus "github.com/Sirupsen/logrus"
 	strftime "github.com/weidewang/go-strftime"
 
 	"../utils"
@@ -47,7 +46,7 @@ type Environment struct {
 	histFile       string
 	histTimeFormat string
 	shell          string
-	logger         *log.Logger
+	log            *logrus.Logger
 }
 
 func (e *Environment) OK() bool {
@@ -155,7 +154,7 @@ func (e *Environment) FormatTime(timestamp *time.Time) (string, error) {
 	return strftime.Strftime(timestamp, format), nil
 }
 
-func (e *Environment) GetLogger() (*log.Logger, error) {
+func (e *Environment) GetLogger() (*logrus.Logger, error) {
 	if e.log == nil {
 		return nil, errors.New("Logger is not set yet")
 	}
@@ -163,9 +162,13 @@ func (e *Environment) GetLogger() (*log.Logger, error) {
 }
 
 func (e *Environment) EnableDebugLog() {
-	e.log = log.New(os.Stderr, "", log.Lshortfile)
+	e.log = logrus.New()
+	e.log.Out = os.Stderr
+	e.log.Level = logrus.DebugLevel
 }
 
 func (e *Environment) DisableDebugLog() {
-	e.log = log.New(ioutil.Discard, "", 0)
+	e.log = logrus.New()
+	e.log.Out = os.Stderr
+	e.log.Level = logrus.ErrorLevel
 }
