@@ -10,7 +10,7 @@ import (
 	"../environments"
 )
 
-type Parser func(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error)
+type Parser func(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error)
 
 var (
 	bashTimestampRegexp = regexp.MustCompile(`^#'s*\d+$`)
@@ -41,7 +41,7 @@ func getParser(env *environments.Environment) Parser {
 	}
 }
 
-func parseBash(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error) {
+func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error) {
 	var currentNumber uint = 0
 	currentTime := 0
 	events := prepareHistoryEntries()
@@ -84,14 +84,16 @@ func parseBash(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, e
 	return scanEnd(scanner, events)
 }
 
-func parseZsh(scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error) {
+func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error) {
 	var currentNumber uint = 0
 	events := prepareHistoryEntries()
 	currentEvent := HistoryEntry{}
 	continueToConsume := false
+	logger, _ := env.GetLogger()
 
 	for scanner.Scan() {
 		text := scanner.Text()
+		logger.Info("Got text line ", text)
 
 		if continueToConsume {
 			currentEvent.command += "\n" + text

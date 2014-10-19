@@ -50,7 +50,7 @@ type Environment struct {
 }
 
 func (e *Environment) OK() bool {
-	return e.appDir != "" && e.histFile != "" && e.histTimeFormat != "" && e.shell != ""
+	return e.log != nil && e.appDir != "" && e.histFile != "" && e.shell != ""
 }
 
 func (e *Environment) GetTracesDir() string {
