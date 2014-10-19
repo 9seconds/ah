@@ -8,9 +8,9 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 
-	"./app2/commands"
-	"./app2/environments"
-	"./app2/slices"
+	"./app/commands"
+	"./app/environments"
+	"./app/slices"
 )
 
 const OPTIONS = `ah - A better history.

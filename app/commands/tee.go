@@ -35,6 +35,10 @@ func Tee(input []string, env *environments.Environment) {
 	os.Rename(output.Name(), env.GetTraceFileName(len(commands)))
 
 	if err != nil {
-		os.Exit(utils.GetStatusCode(err.(*exec.ExitError)))
+		if exitError, ok := err.(*exec.ExitError); ok {
+			os.Exit(utils.GetStatusCode(exitError))
+		} else {
+			panic(err.Error())
+		}
 	}
 }
