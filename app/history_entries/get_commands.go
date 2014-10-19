@@ -3,7 +3,6 @@ package history_entries
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"regexp"
 	"strconv"
@@ -28,7 +27,6 @@ func GetCommands(filter *regexp.Regexp, env *environments.Environment) ([]Histor
 
 	if commands, err := getParser(env)(env, scanner, filter); err == nil {
 		histories := <-historyChan
-		fmt.Println(histories)
 		for idx, _ := range commands {
 			if _, ok := histories[commands[idx].number]; ok {
 				commands[idx].hasHistory = true
