@@ -73,7 +73,7 @@ func (he HistoryEntry) ToString(env *environments.Environment) string {
 
 	history := MARK_HAS_NO_HISTORY
 	if he.HasHistory() {
-		history = MARK_HAS_NO_HISTORY
+		history = MARK_HAS_HISTORY
 	}
 
 	return fmt.Sprintf("!%d %c%s\t%s", number, history, timestamp, command)
