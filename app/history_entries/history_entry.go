@@ -1,6 +1,7 @@
 package history_entries
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"encoding/binary"
 	"errors"
@@ -83,9 +84,9 @@ func (he *HistoryEntry) ToString(env *environments.Environment) string {
 }
 
 func (he *HistoryEntry) GetTraceName() string {
-	sum := sha1.New()
-	binary.Write(sum, binary.LittleEndian, he.timestamp)
-	io.WriteString(sum, he.command)
+	buffer := new(bytes.Buffer)
+	binary.Write(buffer, binary.LittleEndian, he.timestamp)
+	io.WriteString(buffer, he.command)
 
-	return string(sum.Sum(nil))
+	return fmt.Sprintf("%x", sha1.Sum(buffer.Bytes()))
 }

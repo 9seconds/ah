@@ -54,7 +54,8 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	if err_ != nil {
 		panic("Sorry, cannot detect the number of the command")
 	}
-	os.Rename(output.Name(), env.GetTraceFileName(len(commands)))
+	commandHash := commands[len(commands)-1].GetTraceName()
+	os.Rename(output.Name(), env.GetTraceFileName(commandHash))
 
 	if commandError != nil {
 		if exitError, ok := commandError.(*exec.ExitError); ok {

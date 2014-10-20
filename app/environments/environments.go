@@ -7,7 +7,6 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	logrus "github.com/Sirupsen/logrus"
@@ -61,8 +60,8 @@ func (e *Environment) GetBookmarksDir() string {
 	return filepath.Join(e.appDir, BOOKMARKS_DIR)
 }
 
-func (e *Environment) GetTraceFileName(number int) string {
-	return filepath.Join(e.GetTracesDir(), strconv.Itoa(number))
+func (e *Environment) GetTraceFileName(hash string) string {
+	return filepath.Join(e.GetTracesDir(), hash)
 }
 
 func (e *Environment) GetBookmarkFileName(name string) string {
