@@ -13,7 +13,7 @@ import (
 	"../utils"
 )
 
-func GetCommands(filter *regexp.Regexp, env *environments.Environment) ([]HistoryEntry, error) {
+func GetCommands(filter *regexp.Regexp, env *environments.Environment) ([]*HistoryEntry, error) {
 	if !env.OK() {
 		return nil, errors.New("Environment is not prepared")
 	}
@@ -27,9 +27,9 @@ func GetCommands(filter *regexp.Regexp, env *environments.Environment) ([]Histor
 
 	if commands, err := getParser(env)(env, scanner, filter); err == nil {
 		histories := <-historyChan
-		for idx, _ := range commands {
-			if _, ok := histories[commands[idx].number]; ok {
-				commands[idx].hasHistory = true
+		for _, command := range commands {
+			if _, ok := histories[command.number]; ok {
+				command.hasHistory = true
 			}
 		}
 		return commands, nil

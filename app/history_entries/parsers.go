@@ -12,7 +12,7 @@ import (
 	"../environments"
 )
 
-type Parser func(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error)
+type Parser func(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp) ([]*HistoryEntry, error)
 
 var (
 	bashTimestampRegexp = regexp.MustCompile(`^#'s*\d+$`)
@@ -43,11 +43,11 @@ func getParser(env *environments.Environment) Parser {
 	}
 }
 
-func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error) {
+func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp) ([]*HistoryEntry, error) {
 	var currentNumber uint = 0
 	currentTime := 0
 	events := prepareHistoryEntries()
-	currentEvent := HistoryEntry{}
+	currentEvent := new(HistoryEntry)
 	continueToConsume := false
 	logger, _ := env.GetLogger()
 
@@ -77,7 +77,7 @@ func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *re
 			}).Info("Stop consuming")
 
 			events = append(events, currentEvent)
-			currentEvent = HistoryEntry{}
+			currentEvent = new(HistoryEntry)
 		}
 
 		if bashTimestampRegexp.MatchString(text) {
@@ -114,7 +114,7 @@ func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *re
 				continueToConsume = strings.HasSuffix(text, "\\")
 				if !continueToConsume {
 					events = append(events, currentEvent)
-					currentEvent = HistoryEntry{}
+					currentEvent = new(HistoryEntry)
 				}
 			} else {
 				logger.WithFields(logrus.Fields{
@@ -136,10 +136,10 @@ func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *re
 	return scanEnd(scanner, events)
 }
 
-func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp) ([]HistoryEntry, error) {
+func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp) ([]*HistoryEntry, error) {
 	var currentNumber uint = 0
 	events := prepareHistoryEntries()
-	currentEvent := HistoryEntry{}
+	currentEvent := new(HistoryEntry)
 	continueToConsume := false
 	logger, _ := env.GetLogger()
 
@@ -169,7 +169,7 @@ func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *reg
 			}).Info("Stop consuming")
 
 			events = append(events, currentEvent)
-			currentEvent = HistoryEntry{}
+			currentEvent = new(HistoryEntry)
 		}
 
 		matcher := zshLineRegexp.FindStringSubmatch(text)
@@ -218,7 +218,7 @@ func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *reg
 		continueToConsume = strings.HasSuffix(text, "\\")
 		if !continueToConsume {
 			events = append(events, currentEvent)
-			currentEvent = HistoryEntry{}
+			currentEvent = new(HistoryEntry)
 		}
 	}
 
@@ -229,7 +229,7 @@ func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *reg
 	return scanEnd(scanner, events)
 }
 
-func scanEnd(scanner *bufio.Scanner, events []HistoryEntry) ([]HistoryEntry, error) {
+func scanEnd(scanner *bufio.Scanner, events []*HistoryEntry) ([]*HistoryEntry, error) {
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	} else {
@@ -237,6 +237,6 @@ func scanEnd(scanner *bufio.Scanner, events []HistoryEntry) ([]HistoryEntry, err
 	}
 }
 
-func prepareHistoryEntries() []HistoryEntry {
-	return make([]HistoryEntry, 0, historyEventsCapacity)
+func prepareHistoryEntries() []*HistoryEntry {
+	return make([]*HistoryEntry, 0, historyEventsCapacity)
 }
