@@ -12,7 +12,7 @@ import (
 	"../environments"
 )
 
-type Parser func(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp) ([]*HistoryEntry, error)
+type Parser func(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp, historyChan chan *HistoryEntry) ([]*HistoryEntry, error)
 
 var (
 	bashTimestampRegexp = regexp.MustCompile(`^#'s*\d+$`)
@@ -43,7 +43,9 @@ func getParser(env *environments.Environment) Parser {
 	}
 }
 
-func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp) ([]*HistoryEntry, error) {
+func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp, historyChan chan *HistoryEntry) ([]*HistoryEntry, error) {
+	defer close(historyChan)
+
 	var currentNumber uint = 0
 	currentTime := 0
 	events := prepareHistoryEntries()
@@ -77,6 +79,7 @@ func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *re
 			}).Info("Stop consuming")
 
 			events = append(events, currentEvent)
+			historyChan <- currentEvent
 			currentEvent = new(HistoryEntry)
 		}
 
@@ -114,6 +117,7 @@ func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *re
 				continueToConsume = strings.HasSuffix(text, "\\")
 				if !continueToConsume {
 					events = append(events, currentEvent)
+					historyChan <- currentEvent
 					currentEvent = new(HistoryEntry)
 				}
 			} else {
@@ -136,7 +140,9 @@ func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *re
 	return scanEnd(scanner, events)
 }
 
-func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp) ([]*HistoryEntry, error) {
+func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp, historyChan chan *HistoryEntry) ([]*HistoryEntry, error) {
+	defer close(historyChan)
+
 	var currentNumber uint = 0
 	events := prepareHistoryEntries()
 	currentEvent := new(HistoryEntry)
@@ -169,6 +175,7 @@ func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *reg
 			}).Info("Stop consuming")
 
 			events = append(events, currentEvent)
+			historyChan <- currentEvent
 			currentEvent = new(HistoryEntry)
 		}
 
@@ -218,6 +225,7 @@ func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *reg
 		continueToConsume = strings.HasSuffix(text, "\\")
 		if !continueToConsume {
 			events = append(events, currentEvent)
+			historyChan <- currentEvent
 			currentEvent = new(HistoryEntry)
 		}
 	}
