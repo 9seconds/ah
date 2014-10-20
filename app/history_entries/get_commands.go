@@ -67,6 +67,7 @@ func processHistories(env *environments.Environment) (chan bool, chan *HistoryEn
 				}
 			} else {
 				resultChan <- true
+				break
 			}
 		}
 	}()
