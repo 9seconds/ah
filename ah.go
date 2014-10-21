@@ -130,6 +130,9 @@ func main() {
 	} else if arguments["e"].(bool) {
 		logger.Info("Execute command 'execute'")
 		exec = executeExec
+	} else if arguments["g"].(bool) {
+		logger.Info("Execute command 'gc'")
+		exec = executeGC
 	} else {
 		logger.Info("No valid choices", arguments)
 		panic("Unknown command. Please be more precise")
@@ -232,4 +235,35 @@ func executeExec(arguments map[string]interface{}, env *environments.Environment
 	} else {
 		panic("Incorrect bookmark name! It should be started with alphabet letter, and alphabet or digits after!")
 	}
+}
+
+func executeGC(arguments map[string]interface{}, env *environments.Environment) {
+	var param int
+	var gcType commands.GcType
+
+	if arguments["--keepLatest"] != nil {
+		gcType = commands.GC_KEEP_LATEST
+		paramString := arguments["--keepLatest"].(string)
+		paramConverted, err := strconv.Atoi(paramString)
+		if err != nil {
+			panic(err)
+		}
+		param = paramConverted
+	} else if arguments["--olderThan"] != nil {
+		gcType = commands.GC_OLDER_THAN
+		paramString := arguments["--olderThan"].(string)
+		paramConverted, err := strconv.Atoi(paramString)
+		if err != nil {
+			panic(err)
+		}
+		param = paramConverted
+	} else {
+		panic("Unknown command")
+	}
+
+	if param <= 0 {
+		panic("Parameter of garbage collection has to be > 0")
+	}
+
+	commands.GC(gcType, param, env)
 }
