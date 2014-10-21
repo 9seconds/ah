@@ -33,6 +33,7 @@ Usage:
     ah [options] e <commandNumberOrBookMarkName>
     ah [options] t [-y] [--] <command>...
     ah [options] l <numberOfCommandYouWantToCheck>
+	ah [options] g [--keepLatest <keepLatest> | --olderThan <olderThan>]
     ah (-h | --help)
     ah --version
 
@@ -241,17 +242,17 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 	var param int
 	var gcType commands.GcType
 
-	if arguments["--keepLatest"] != nil {
+	if arguments["--keepLatest"].(bool) {
 		gcType = commands.GC_KEEP_LATEST
-		paramString := arguments["--keepLatest"].(string)
+		paramString := arguments["<keepLatest>"].(string)
 		paramConverted, err := strconv.Atoi(paramString)
 		if err != nil {
 			panic(err)
 		}
 		param = paramConverted
-	} else if arguments["--olderThan"] != nil {
+	} else if arguments["--olderThan"].(bool) {
 		gcType = commands.GC_OLDER_THAN
-		paramString := arguments["--olderThan"].(string)
+		paramString := arguments["<olderThan>"].(string)
 		paramConverted, err := strconv.Atoi(paramString)
 		if err != nil {
 			panic(err)
