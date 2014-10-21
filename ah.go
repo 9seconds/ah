@@ -48,6 +48,8 @@ Options:
     -v, --debug                                           Shows a debug log of command execution.`
 
 const (
+	VERSION = "ah 0.4"
+
 	DEFAULT_APP_DIR = ".ah"
 )
 
@@ -65,7 +67,7 @@ func main() {
 		}
 	}()
 
-	arguments, err := docopt.Parse(OPTIONS, nil, true, "ah 0.1", false)
+	arguments, err := docopt.Parse(OPTIONS, nil, true, VERSION, false)
 	if err != nil {
 		panic(err)
 	}
