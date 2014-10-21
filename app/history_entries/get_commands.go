@@ -3,7 +3,6 @@ package history_entries
 import (
 	"bufio"
 	"errors"
-	"io/ioutil"
 	"regexp"
 
 	logrus "github.com/Sirupsen/logrus"
@@ -40,7 +39,7 @@ func processHistories(env *environments.Environment) (chan bool, chan *HistoryEn
 		entries := make(map[string]bool)
 		logger, _ := env.GetLogger()
 
-		files, err := ioutil.ReadDir(env.GetTracesDir())
+		files, err := env.GetTraceFilenames()
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"error": err,
@@ -50,12 +49,6 @@ func processHistories(env *environments.Environment) (chan bool, chan *HistoryEn
 		}
 
 		for _, file := range files {
-			if file.IsDir() {
-				logger.WithFields(logrus.Fields{
-					"filename": file.Name(),
-				}).Info("Skip file because it is directory")
-				continue
-			}
 			entries[file.Name()] = true
 		}
 

@@ -3,6 +3,7 @@ package environments
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
@@ -170,4 +171,22 @@ func (e *Environment) DisableDebugLog() {
 	e.log = logrus.New()
 	e.log.Out = os.Stderr
 	e.log.Level = logrus.ErrorLevel
+}
+
+func (e *Environment) GetTraceFilenames() ([]os.FileInfo, error) {
+	fileInfos := make([]os.FileInfo, 0, 16)
+
+	files, err := ioutil.ReadDir(e.GetTracesDir())
+	if err != nil {
+		return fileInfos, err
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		fileInfos = append(fileInfos, file)
+	}
+
+	return fileInfos, nil
 }
