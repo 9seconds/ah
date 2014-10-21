@@ -16,16 +16,22 @@ import (
 
 const OPTIONS = `ah - A better history.
 
-Ah is a better way to traverse the history of your shell prompts. Right now it supports only 3 additional possibilities you are probably have dreamt about:
+Ah is a better way to traverse the history of your shell prompts. Right now it 
+supports only 3 additional possibilities you are probably have dreamt about:
     1. Good searching;
     2. Better memoizing of entries;
     3. Storing an output of the commands.
 
-Searching is done using 's' command. You may filter output or fetch a history slice you are wondering about. Filtering uses regular expressions or fuzzy matching out of box.
+Searching is done using 's' command. You may filter output or fetch a history 
+slice you are wondering about. Filtering uses regular expressions or fuzzy 
+matching out of box.
 
-Memoizing means that you have an ability to bookmark some favourite commands and use ah to store some sort of short snippets or ad-hoc shell scripts.
+Memoizing means that you have an ability to bookmark some favourite commands 
+and use ah to store some sort of short snippets or ad-hoc shell scripts.
 
-And ah gives you a possibility to have a persistent storage of an output of any command you are executing. And you can return back to it any time you want.
+And ah gives you a possibility to have a persistent storage of an output 
+of any command you are executing. And you can return back to it any time 
+you want.
 
 Usage:
     ah [options] s [-z] [-g PATTERN] [<lastNcommands> | <startFromNCommand> <finishByMCommand>]
@@ -33,7 +39,7 @@ Usage:
     ah [options] e <commandNumberOrBookMarkName>
     ah [options] t [-y] [--] <command>...
     ah [options] l <numberOfCommandYouWantToCheck>
-	ah [options] g [--keepLatest <keepLatest> | --olderThan <olderThan>]
+    ah [options] g [--keepLatest <keepLatest> | --olderThan <olderThan>]
     ah (-h | --help)
     ah --version
 
@@ -44,7 +50,7 @@ Options:
     -d APPDIR, --appdir=APPDIR                            A place where ah has to store its data.
     -g PATTERN, --grep PATTERN                            A pattern to filter command lines. It is regular expression if no -f option is set.
     -y, --tty                                             Allocates pseudo-tty is necessary
-	-z, --fuzzy                                           Interpret -g pattern as fuzzy match string.
+    -z, --fuzzy                                           Interpret -g pattern as fuzzy match string.
     -v, --debug                                           Shows a debug log of command execution.`
 
 const (
