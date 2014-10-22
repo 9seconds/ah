@@ -35,6 +35,7 @@ func Exec(cmd string, args ...string) *exec.ExitError {
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
 	command.Stdin = os.Stdin
+	AttachSignalsToProcess(command)
 
 	err := command.Run()
 	if exitError, ok := err.(*exec.ExitError); ok {

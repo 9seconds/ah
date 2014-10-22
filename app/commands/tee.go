@@ -25,6 +25,7 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	combinedStdout := io.MultiWriter(os.Stdout, bufferedOutput)
 	combinedStderr := io.MultiWriter(os.Stderr, bufferedOutput)
 	command := exec.Command(input[0], input[1:]...)
+	utils.AttachSignalsToProcess(command)
 
 	if pseudoTTY {
 		Stdin, Stdout, Stderr, ptyError := runPTYCommand(command)
