@@ -1,7 +1,6 @@
 package history_entries
 
 import (
-	"bytes"
 	"crypto/sha1"
 	"encoding/binary"
 	"errors"
@@ -67,8 +66,8 @@ func (he *HistoryEntry) HasHistory() bool {
 }
 
 func (he *HistoryEntry) ToString(env *environments.Environment) string {
-	command, _ := he.GetCommand()
-	number, _ := he.GetNumber()
+	command := he.command
+	number := he.number
 
 	timestamp := ""
 	if formattedTimestamp, err := he.GetFormattedTime(env); err == nil {
@@ -76,7 +75,7 @@ func (he *HistoryEntry) ToString(env *environments.Environment) string {
 	}
 
 	history := MARK_HAS_NO_HISTORY
-	if he.HasHistory() {
+	if he.hasHistory {
 		history = MARK_HAS_HISTORY
 	}
 
@@ -84,9 +83,9 @@ func (he *HistoryEntry) ToString(env *environments.Environment) string {
 }
 
 func (he *HistoryEntry) GetTraceName() string {
-	buffer := new(bytes.Buffer)
-	binary.Write(buffer, binary.LittleEndian, he.timestamp)
-	io.WriteString(buffer, he.command)
+	digest := sha1.New()
+	binary.Write(digest, binary.LittleEndian, int64(he.timestamp))
+	io.WriteString(digest, he.command)
 
-	return fmt.Sprintf("%x", sha1.Sum(buffer.Bytes()))
+	return fmt.Sprintf("%x", digest.Sum(nil))
 }
