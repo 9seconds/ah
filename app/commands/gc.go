@@ -5,6 +5,8 @@ import (
 	"sort"
 	"time"
 
+	logrus "github.com/Sirupsen/logrus"
+
 	"../environments"
 )
 
@@ -26,33 +28,30 @@ func (fis FileInfoSorter) Len() int {
 }
 
 func (fis FileInfoSorter) Less(i, j int) bool {
-	return fis.content[i].ModTime().Unix() < fis.content[i].ModTime().Unix()
+	return fis.content[i].ModTime().Unix() < fis.content[j].ModTime().Unix()
 }
 
 func (fis FileInfoSorter) Swap(i, j int) {
 	fis.content[i], fis.content[j] = fis.content[j], fis.content[i]
 }
 
-func (fis FileInfoSorter) YoungerThan(timestamp int64) FileInfoSorter {
+func (fis FileInfoSorter) YoungerThan(timestamp int64) []os.FileInfo {
 	binarySearchFunc := func(i int) bool {
 		return fis.content[i].ModTime().Unix() > timestamp
 	}
-
 	index := sort.Search(len(fis.content), binarySearchFunc)
-	if index == len(fis.content) {
-		return FileInfoSorter{content: []os.FileInfo{}}
-	}
-	return FileInfoSorter{content: fis.content[index:]}
+	return fis.content[:index]
 }
 
-func (fis FileInfoSorter) First(count int) FileInfoSorter {
-	if count >= len(fis.content) {
-		return FileInfoSorter{content: []os.FileInfo{}}
+func (fis FileInfoSorter) Tail(first int) []os.FileInfo {
+	if first >= len(fis.content) {
+		return fis.content
 	}
-	return FileInfoSorter{content: fis.content[:count]}
+	return fis.content[len(fis.content)-first:]
 }
 
 func GC(gcType GcType, param int, env *environments.Environment) {
+	logger, _ := env.GetLogger()
 	fileInfos, err := env.GetTraceFilenames()
 	if err != nil {
 		panic("Cannot fetch the list of trace filenames")
@@ -61,13 +60,16 @@ func GC(gcType GcType, param int, env *environments.Environment) {
 	sort.Sort(fileInfoSorter)
 
 	if gcType == GC_KEEP_LATEST {
-		fileInfoSorter = fileInfoSorter.First(param)
+		fileInfos = fileInfoSorter.Tail(param)
 	} else {
-		timestamp := time.Now().Unix() - int64(param*SECONDS_IN_DAY)
-		fileInfoSorter = fileInfoSorter.YoungerThan(timestamp)
+		timestamp := time.Now().Unix() - SECONDS_IN_DAY*int64(param)
+		fileInfos = fileInfoSorter.YoungerThan(timestamp)
 	}
 
-	for _, info := range fileInfoSorter.content {
-		os.Remove(info.Name())
+	for _, info := range fileInfos {
+		logger.WithFields(logrus.Fields{
+			"filename": info.Name(),
+		}).Info("Remove file")
+		os.Remove(env.GetTraceFileName(info.Name()))
 	}
 }

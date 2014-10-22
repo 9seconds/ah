@@ -247,6 +247,8 @@ func executeExec(arguments map[string]interface{}, env *environments.Environment
 }
 
 func executeGC(arguments map[string]interface{}, env *environments.Environment) {
+	logger, _ := env.GetLogger()
+
 	var param int
 	var gcType commands.GcType
 
@@ -273,6 +275,11 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 	if param <= 0 {
 		panic("Parameter of garbage collection has to be > 0")
 	}
+
+	logger.WithFields(logrus.Fields{
+		"gcType": gcType,
+		"param":  param,
+	}).Info("Arguments")
 
 	commands.GC(gcType, param, env)
 }
