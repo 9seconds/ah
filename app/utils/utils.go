@@ -40,9 +40,8 @@ func Exec(cmd string, args ...string) *exec.ExitError {
 	err := command.Run()
 	if exitError, ok := err.(*exec.ExitError); ok {
 		return exitError
-	} else {
-		panic(err.Error())
 	}
+	panic(err.Error())
 }
 
 func GetStatusCode(err *exec.ExitError) int {

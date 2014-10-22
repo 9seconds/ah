@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	commandLock    *sync.Mutex = new(sync.Mutex)
-	currentCommand *exec.Cmd   = nil
+	commandLock    = new(sync.Mutex)
+	currentCommand *exec.Cmd
 )
 
 func AttachSignalsToProcess(command *exec.Cmd) {

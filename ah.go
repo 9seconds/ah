@@ -14,7 +14,7 @@ import (
 	"./app/slices"
 )
 
-const OPTIONS = `ah - A better history.
+const options = `ah - A better history.
 
 Ah is a better way to traverse the history of your shell prompts. Right now it 
 supports only 3 additional possibilities you are probably have dreamt about:
@@ -53,15 +53,9 @@ Options:
     -z, --fuzzy                                           Interpret -g pattern as fuzzy match string.
     -v, --debug                                           Shows a debug log of command execution.`
 
-const (
-	VERSION = "ah 0.4"
+const version = "ah 0.4"
 
-	DEFAULT_APP_DIR = ".ah"
-)
-
-var (
-	VALIDATE_BOOKMARK_NAME = regexp.MustCompile(`^\w(\w|\d)*$`)
-)
+var validateBookmarkName = regexp.MustCompile(`^\w(\w|\d)*$`)
 
 type executor func(arguments map[string]interface{}, env *environments.Environment)
 
@@ -73,7 +67,7 @@ func main() {
 		}
 	}()
 
-	arguments, err := docopt.Parse(OPTIONS, nil, true, VERSION, false)
+	arguments, err := docopt.Parse(options, nil, true, version, false)
 	if err != nil {
 		panic(err)
 	}
@@ -214,7 +208,7 @@ func executeBookmark(arguments map[string]interface{}, env *environments.Environ
 	}
 
 	bookmarkAs := arguments["<bookmarkAs>"].(string)
-	if !VALIDATE_BOOKMARK_NAME.MatchString(bookmarkAs) {
+	if !validateBookmarkName.MatchString(bookmarkAs) {
 		panic("Incorrect bookmark name!")
 	}
 
@@ -238,7 +232,7 @@ func executeExec(arguments map[string]interface{}, env *environments.Environment
 	if commandNumber, err := strconv.Atoi(commandNumberOrBookMarkName); err == nil {
 		logger.Info("Execute command number ", commandNumber)
 		commands.ExecuteCommandNumber(commandNumber, env)
-	} else if VALIDATE_BOOKMARK_NAME.MatchString(commandNumberOrBookMarkName) {
+	} else if validateBookmarkName.MatchString(commandNumberOrBookMarkName) {
 		logger.Info("Execute bookmark ", commandNumberOrBookMarkName)
 		commands.ExecuteBookmark(commandNumberOrBookMarkName, env)
 	} else {
