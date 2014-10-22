@@ -13,7 +13,8 @@ import (
 type GcType uint8
 
 const (
-	GC_KEEP_LATEST = iota
+	GC_ALL GcType = iota
+	GC_KEEP_LATEST
 	GC_OLDER_THAN
 )
 
@@ -59,11 +60,14 @@ func GC(gcType GcType, param int, env *environments.Environment) {
 	fileInfoSorter := FileInfoSorter{content: fileInfos}
 	sort.Sort(fileInfoSorter)
 
-	if gcType == GC_KEEP_LATEST {
+	switch gcType {
+	case GC_KEEP_LATEST:
 		fileInfos = fileInfoSorter.Tail(param)
-	} else {
+	case GC_OLDER_THAN:
 		timestamp := time.Now().Unix() - SECONDS_IN_DAY*int64(param)
 		fileInfos = fileInfoSorter.YoungerThan(timestamp)
+	default:
+		fileInfos = fileInfoSorter.content
 	}
 
 	for _, info := range fileInfos {

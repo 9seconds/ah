@@ -39,7 +39,7 @@ Usage:
     ah [options] e <commandNumberOrBookMarkName>
     ah [options] t [-y] [--] <command>...
     ah [options] l <numberOfCommandYouWantToCheck>
-    ah [options] g [--keepLatest <keepLatest> | --olderThan <olderThan>]
+    ah [options] g [--keepLatest <keepLatest> | --olderThan <olderThan> | --all]
     ah (-h | --help)
     ah --version
 
@@ -268,6 +268,9 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 			panic(err)
 		}
 		param = paramConverted
+	} else if arguments["--all"].(bool) {
+		gcType = commands.GC_ALL
+		param = 1
 	} else {
 		panic("Unknown command")
 	}

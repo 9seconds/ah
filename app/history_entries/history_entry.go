@@ -1,7 +1,7 @@
 package history_entries
 
 import (
-	"crypto/sha1"
+	"crypto/md5"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -83,7 +83,7 @@ func (he *HistoryEntry) ToString(env *environments.Environment) string {
 }
 
 func (he *HistoryEntry) GetTraceName() string {
-	digest := sha1.New()
+	digest := md5.New()
 	binary.Write(digest, binary.LittleEndian, int64(he.timestamp))
 	io.WriteString(digest, he.command)
 
