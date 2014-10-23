@@ -24,28 +24,28 @@ type HistoryEntry struct {
 	hasHistory bool
 }
 
-func (he *HistoryEntry) GetNumber() (uint, error) {
+func (he HistoryEntry) GetNumber() (uint, error) {
 	if he.number == 0 {
 		return 0, errors.New("Number is not set yet")
 	}
 	return he.number, nil
 }
 
-func (he *HistoryEntry) GetCommand() (string, error) {
+func (he HistoryEntry) GetCommand() (string, error) {
 	if he.command == "" {
 		return "", errors.New("Command is not set yet")
 	}
 	return he.command, nil
 }
 
-func (he *HistoryEntry) GetTimestamp() (int, error) {
+func (he HistoryEntry) GetTimestamp() (int, error) {
 	if he.timestamp == 0 {
 		return 0, errors.New("Timestamp is not set yet")
 	}
 	return he.timestamp, nil
 }
 
-func (he *HistoryEntry) GetTime() (*time.Time, error) {
+func (he HistoryEntry) GetTime() (*time.Time, error) {
 	timestamp, err := he.GetTimestamp()
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (he *HistoryEntry) GetTime() (*time.Time, error) {
 	return utils.ConvertTimestamp(timestamp), nil
 }
 
-func (he *HistoryEntry) GetFormattedTime(env *environments.Environment) (string, error) {
+func (he HistoryEntry) GetFormattedTime(env *environments.Environment) (string, error) {
 	timestamp, err := he.GetTimestamp()
 	if err != nil {
 		return "", err
@@ -61,11 +61,11 @@ func (he *HistoryEntry) GetFormattedTime(env *environments.Environment) (string,
 	return env.FormatTimeStamp(timestamp)
 }
 
-func (he *HistoryEntry) HasHistory() bool {
+func (he HistoryEntry) HasHistory() bool {
 	return he.hasHistory
 }
 
-func (he *HistoryEntry) ToString(env *environments.Environment) string {
+func (he HistoryEntry) ToString(env *environments.Environment) string {
 	command := he.command
 	number := he.number
 
@@ -82,7 +82,7 @@ func (he *HistoryEntry) ToString(env *environments.Environment) string {
 	return fmt.Sprintf("!%d %c%s\t%s", number, history, timestamp, command)
 }
 
-func (he *HistoryEntry) GetTraceName() string {
+func (he HistoryEntry) GetTraceName() string {
 	digest := md5.New()
 	binary.Write(digest, binary.LittleEndian, int64(he.timestamp))
 	io.WriteString(digest, he.command)

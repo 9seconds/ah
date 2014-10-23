@@ -5,65 +5,39 @@ import (
 	"errors"
 	// "regexp"
 
-	logrus "github.com/Sirupsen/logrus"
+	// logrus "github.com/Sirupsen/logrus"
 
 	"../environments"
 	"../utils"
 )
 
-func GetCommands(filter *utils.Regexp, env *environments.Environment) ([]*HistoryEntry, error) {
+type GetCommandsMode uint8
+
+const (
+	GET_COMMANDS_ALL GetCommandsMode = iota
+	GET_COMMANDS_RANGE
+	GET_COMMANDS_SINGLE
+	GET_COMMANDS_PRECISE
+)
+
+func GetCommands(mode GetCommandsMode, filter *utils.Regexp, env *environments.Environment, varargs ...int) (Keeper, error) {
 	if !env.OK() {
 		return nil, errors.New("Environment is not prepared")
 	}
 
 	resultChan, consumeChan := processHistories(env)
+	keeper := getKeeper(mode, varargs...)
+	parser := getParser(env)
 
 	histFile, _ := env.GetHistFile()
 	file := utils.Open(histFile)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 
-	if commands, err := getParser(env)(env, scanner, filter, consumeChan); err == nil {
+	if commands, err := parser(keeper, scanner, filter, consumeChan); err == nil {
 		<-resultChan
 		return commands, nil
 	} else {
 		return nil, err
 	}
-}
-
-func processHistories(env *environments.Environment) (chan bool, chan *HistoryEntry) {
-	resultChan := make(chan bool, 1)
-	consumeChan := make(chan *HistoryEntry, historyEventsCapacity)
-
-	go func() {
-		entries := make(map[string]bool)
-		logger, _ := env.GetLogger()
-
-		files, err := env.GetTraceFilenames()
-		if err != nil {
-			logger.WithFields(logrus.Fields{
-				"error": err,
-			}).Warn("Error on traces directory listing")
-			resultChan <- true
-			return
-		}
-
-		for _, file := range files {
-			entries[file.Name()] = true
-		}
-
-		for {
-			entry, ok := <-consumeChan
-			if ok {
-				if _, found := entries[entry.GetTraceName()]; found {
-					entry.hasHistory = true
-				}
-			} else {
-				resultChan <- true
-				break
-			}
-		}
-	}()
-
-	return resultChan, consumeChan
 }

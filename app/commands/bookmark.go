@@ -13,10 +13,11 @@ func Bookmark(commandNumber int, bookmarkAs string, env *environments.Environmen
 		panic("Command number should be >= 0")
 	}
 
-	commands, err := history_entries.GetCommands(nil, env)
+	commandsKeeper, err := history_entries.GetCommands(history_entries.GET_COMMANDS_ALL, nil, env)
 	if err != nil {
 		panic(err)
 	}
+	commands := commandsKeeper.Result().([]history_entries.HistoryEntry)
 	if len(commands) <= commandNumber {
 		panic("Command number does not exist")
 	}

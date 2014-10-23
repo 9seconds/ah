@@ -51,11 +51,13 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	bufferedOutput.Close()
 	output.Close()
 
-	commands, err_ := history_entries.GetCommands(nil, env)
+	preciseCommand, err_ := history_entries.GetCommands(history_entries.GET_COMMANDS_SINGLE, nil, env)
 	if err_ != nil {
 		panic("Sorry, cannot detect the number of the command")
 	}
-	commandHash := commands[len(commands)-1].GetTraceName()
+	cmd := preciseCommand.Result().(history_entries.HistoryEntry)
+
+	commandHash := cmd.GetTraceName()
 	os.Rename(output.Name(), env.GetTraceFileName(commandHash))
 
 	if commandError != nil {

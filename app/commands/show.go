@@ -11,15 +11,29 @@ import (
 )
 
 func Show(slice *slices.Slice, filter *utils.Regexp, env *environments.Environment) {
-	commands, err := history_entries.GetCommands(filter, env)
+	var commands []history_entries.HistoryEntry
+
+	if slice.Start >= 0 && slice.Finish >= 0 {
+		keeper, err := history_entries.GetCommands(history_entries.GET_COMMANDS_RANGE, filter, env)
+		if err != nil {
+			return
+		}
+		commands = keeper.Result().([]history_entries.HistoryEntry)
+	} else {
+keeper, err := history_entries.GetCommands(history_entries.GET_COMMANDS_ALL, filter, env)
+		if err != nil {
+			return
+		}
+		toBeRanged := keeper.Result().([]history_entries.HistoryEntry)
 	sliceStart := slices.GetSliceIndex(slice.Start, len(commands))
 	sliceFinish := slices.GetSliceIndex(slice.Finish, len(commands))
-
-	if err != nil || sliceStart < 0 || sliceFinish < 0 || sliceFinish <= sliceStart {
-		return
+		if  sliceStart < 0 || sliceFinish < 0 || sliceFinish <= sliceStart {
+			return
+		}
+		commands = toBeRanged[sliceStart:sliceFinish]
 	}
 
-	for _, value := range commands[sliceStart:sliceFinish] {
-		fmt.Println(value.ToString(env))
+	for idx := 0; idx < len(commands); idx++ {
+		fmt.Println(commands[idx].ToString(env))
 	}
 }

@@ -14,17 +14,14 @@ func ExecuteCommandNumber(number int, env *environments.Environment) {
 		panic("Cannot find such command")
 	}
 
-	commands, err := history_entries.GetCommands(nil, env)
+	commands, err := history_entries.GetCommands(history_entries.GET_COMMANDS_PRECISE, nil, env)
 	if err != nil {
 		panic(err)
 	}
+	command, _ := commands.Result().(history_entries.HistoryEntry)
+	cmd, _ := command.GetCommand()
 
-	if len(commands) <= number {
-		panic("Cannot find such command")
-	}
-	command, _ := commands[number-1].GetCommand()
-
-	execute(command)
+	execute(cmd)
 }
 
 func ExecuteBookmark(name string, env *environments.Environment) {
