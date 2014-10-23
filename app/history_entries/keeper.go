@@ -18,7 +18,7 @@ func init() {
 
 type Keeper interface {
 	Init() *HistoryEntry
-	Commit() *HistoryEntry
+	Commit(*HistoryEntry, chan *HistoryEntry) *HistoryEntry
 	Continue() bool
 	Result() interface{}
 }
@@ -51,7 +51,7 @@ func (sk *singleKeeper) Init() *HistoryEntry {
 	return sk.current
 }
 
-func (sk *singleKeeper) Commit() *HistoryEntry {
+func (sk *singleKeeper) Commit(event *HistoryEntry, historyChannel chan *HistoryEntry) *HistoryEntry {
 	return sk.current
 }
 
@@ -63,9 +63,9 @@ func (sk *singleKeeper) Result() interface{} {
 	return *sk.current
 }
 
-func (pnk *preciseNumberKeeper) Commit() *HistoryEntry {
+func (pnk *preciseNumberKeeper) Commit(event *HistoryEntry, historyChannel chan *HistoryEntry) *HistoryEntry {
 	pnk.currentIndex++
-	return pnk.singleKeeper.Commit()
+	return pnk.singleKeeper.Commit(event, historyChannel)
 }
 
 func (pnk *preciseNumberKeeper) Continue() bool {
@@ -81,7 +81,8 @@ func (ak *allKeeper) Init() *HistoryEntry {
 	return &ak.entries[0]
 }
 
-func (ak *allKeeper) Commit() *HistoryEntry {
+func (ak *allKeeper) Commit(event *HistoryEntry, historyChannel chan *HistoryEntry) *HistoryEntry {
+	historyChannel <- event
 	ak.currentIndex++
 	if ak.currentIndex == len(ak.entries) {
 		ak.entries = append(ak.entries, HistoryEntry{})
@@ -108,7 +109,8 @@ func (rk *rangeKeeper) Init() *HistoryEntry {
 	return rk.current
 }
 
-func (rk *rangeKeeper) Commit() *HistoryEntry {
+func (rk *rangeKeeper) Commit(event *HistoryEntry, historyChannel chan *HistoryEntry) *HistoryEntry {
+	historyChannel <- event
 	if rk.start <= rk.currentIndex && rk.currentIndex < rk.finish {
 		rk.entries[rk.currentIndex-rk.start] = *rk.current
 		rk.current = new(HistoryEntry)

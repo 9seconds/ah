@@ -10,11 +10,11 @@ import (
 )
 
 var (
-	bashTimestampRegexp = utils.CreateRegexp(`^#'s*\d+$`)
-	zshLineRegexp       = utils.CreateRegexp(`^:\s*(\d*)\s*:(\d*)\s*;(.*)`)
+	bashTimestampRegexp = utils.CreateRegexp(`^#\s*\d+$`)
+	zshLineRegexp       = utils.CreateRegexp(`^: (\d+):\d;(.*)$`)
 )
 
-type Parser func(keeper Keeper, scanner *bufio.Scanner, filter *utils.Regexp, historyChan chan *HistoryEntry) (Keeper, error)
+type Parser func(Keeper, *bufio.Scanner, *utils.Regexp, chan *HistoryEntry) (Keeper, error)
 
 type ShellSpecificParser func(Keeper, string, uint, *HistoryEntry, *utils.Regexp, chan *HistoryEntry) (bool, uint, *HistoryEntry)
 
@@ -41,8 +41,7 @@ func getParser(env *environments.Environment) Parser {
 					continue
 				}
 				continueToConsume = false
-				historyChan <- currentEvent
-				currentEvent = keeper.Commit()
+				currentEvent = keeper.Commit(currentEvent, historyChan)
 			}
 
 			continueToConsume, currentNumber, currentEvent = shellSpecific(
@@ -75,8 +74,7 @@ func parseBash(keeper Keeper, text string, currentNumber uint, currentEvent *His
 
 				continueToConsume = strings.HasSuffix(text, "\\")
 				if !continueToConsume {
-					historyChan <- currentEvent
-					currentEvent = keeper.Commit()
+					currentEvent = keeper.Commit(currentEvent, historyChan)
 				}
 			}
 			currentNumber++
@@ -88,10 +86,11 @@ func parseBash(keeper Keeper, text string, currentNumber uint, currentEvent *His
 func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp, historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
 		continueToConsume := false
 	groups, err := zshLineRegexp.Groups(text)
+
 		if err != nil {
 			return continueToConsume, currentNumber, currentEvent
 		}
-		timestamp, command := groups[1], groups[3]
+		timestamp, command := groups[1], groups[2]
 		currentNumber++
 
 		if filter != nil && !filter.Match(command) {
@@ -105,8 +104,7 @@ func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *Hist
 
 		continueToConsume = strings.HasSuffix(text, "\\")
 		if !continueToConsume {
-			historyChan <- currentEvent
-			currentEvent = keeper.Commit()
+			currentEvent = keeper.Commit(currentEvent, historyChan)
 		}
 
 		return continueToConsume, currentNumber, currentEvent

@@ -25,8 +25,8 @@ keeper, err := history_entries.GetCommands(history_entries.GET_COMMANDS_ALL, fil
 			return
 		}
 		toBeRanged := keeper.Result().([]history_entries.HistoryEntry)
-	sliceStart := slices.GetSliceIndex(slice.Start, len(commands))
-	sliceFinish := slices.GetSliceIndex(slice.Finish, len(commands))
+	sliceStart := slices.GetSliceIndex(slice.Start, len(toBeRanged))
+	sliceFinish := slices.GetSliceIndex(slice.Finish, len(toBeRanged))
 		if  sliceStart < 0 || sliceFinish < 0 || sliceFinish <= sliceStart {
 			return
 		}
