@@ -7,30 +7,32 @@ import (
 	"strconv"
 
 	logrus "github.com/Sirupsen/logrus"
+	profile "github.com/davecheney/profile"
 	docopt "github.com/docopt/docopt-go"
 
 	"./app/commands"
 	"./app/environments"
 	"./app/slices"
+	"./app/utils"
 )
 
 const options = `ah - A better history.
 
-Ah is a better way to traverse the history of your shell prompts. Right now it 
+Ah is a better way to traverse the history of your shell prompts. Right now it
 supports only 3 additional possibilities you are probably have dreamt about:
     1. Good searching;
     2. Better memoizing of entries;
     3. Storing an output of the commands.
 
-Searching is done using 's' command. You may filter output or fetch a history 
-slice you are wondering about. Filtering uses regular expressions or fuzzy 
+Searching is done using 's' command. You may filter output or fetch a history
+slice you are wondering about. Filtering uses regular expressions or fuzzy
 matching out of box.
 
-Memoizing means that you have an ability to bookmark some favourite commands 
+Memoizing means that you have an ability to bookmark some favourite commands
 and use ah to store some sort of short snippets or ad-hoc shell scripts.
 
-And ah gives you a possibility to have a persistent storage of an output 
-of any command you are executing. And you can return back to it any time 
+And ah gives you a possibility to have a persistent storage of an output
+of any command you are executing. And you can return back to it any time
 you want.
 
 Usage:
@@ -55,7 +57,7 @@ Options:
 
 const version = "ah 0.4"
 
-var validateBookmarkName = regexp.MustCompile(`^\w(\w|\d)*$`)
+var validateBookmarkName = utils.CreateRegexp(`^\w(\w|\d)*$`)
 
 type executor func(arguments map[string]interface{}, env *environments.Environment)
 
@@ -66,6 +68,7 @@ func main() {
 			os.Exit(1)
 		}
 	}()
+	defer profile.Start(profile.CPUProfile).Stop()
 
 	arguments, err := docopt.Parse(options, nil, true, version, false)
 	if err != nil {
@@ -167,7 +170,7 @@ func executeShow(arguments map[string]interface{}, env *environments.Environment
 		panic(err)
 	}
 
-	var filter *regexp.Regexp
+	var filter *utils.Regexp
 	if arguments["--grep"] != nil {
 		query := arguments["--grep"].(string)
 		if arguments["--fuzzy"].(bool) {
@@ -177,7 +180,7 @@ func executeShow(arguments map[string]interface{}, env *environments.Environment
 			}
 			query = regex + ".*?"
 		}
-		filter = regexp.MustCompile(query)
+		filter = utils.CreateRegexp(query)
 	}
 
 	logger.WithFields(logrus.Fields{
@@ -208,7 +211,7 @@ func executeBookmark(arguments map[string]interface{}, env *environments.Environ
 	}
 
 	bookmarkAs := arguments["<bookmarkAs>"].(string)
-	if !validateBookmarkName.MatchString(bookmarkAs) {
+	if !validateBookmarkName.Match(bookmarkAs) {
 		panic("Incorrect bookmark name!")
 	}
 
@@ -232,7 +235,7 @@ func executeExec(arguments map[string]interface{}, env *environments.Environment
 	if commandNumber, err := strconv.Atoi(commandNumberOrBookMarkName); err == nil {
 		logger.Info("Execute command number ", commandNumber)
 		commands.ExecuteCommandNumber(commandNumber, env)
-	} else if validateBookmarkName.MatchString(commandNumberOrBookMarkName) {
+	} else if validateBookmarkName.Match(commandNumberOrBookMarkName) {
 		logger.Info("Execute bookmark ", commandNumberOrBookMarkName)
 		commands.ExecuteBookmark(commandNumberOrBookMarkName, env)
 	} else {

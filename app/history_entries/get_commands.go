@@ -3,7 +3,7 @@ package history_entries
 import (
 	"bufio"
 	"errors"
-	"regexp"
+	// "regexp"
 
 	logrus "github.com/Sirupsen/logrus"
 
@@ -11,7 +11,7 @@ import (
 	"../utils"
 )
 
-func GetCommands(filter *regexp.Regexp, env *environments.Environment) ([]*HistoryEntry, error) {
+func GetCommands(filter *utils.Regexp, env *environments.Environment) ([]*HistoryEntry, error) {
 	if !env.OK() {
 		return nil, errors.New("Environment is not prepared")
 	}

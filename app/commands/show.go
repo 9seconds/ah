@@ -2,14 +2,15 @@ package commands
 
 import (
 	"fmt"
-	"regexp"
+	// "regexp"
 
 	"../environments"
 	"../history_entries"
 	"../slices"
+	"../utils"
 )
 
-func Show(slice *slices.Slice, filter *regexp.Regexp, env *environments.Environment) {
+func Show(slice *slices.Slice, filter *utils.Regexp, env *environments.Environment) {
 	commands, err := history_entries.GetCommands(filter, env)
 	sliceStart := slices.GetSliceIndex(slice.Start, len(commands))
 	sliceFinish := slices.GetSliceIndex(slice.Finish, len(commands))

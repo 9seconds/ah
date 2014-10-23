@@ -3,20 +3,21 @@ package history_entries
 import (
 	"bufio"
 	"os"
-	"regexp"
+	// "regexp"
 	"strconv"
 	"strings"
 
 	logrus "github.com/Sirupsen/logrus"
 
 	"../environments"
+	"../utils"
 )
 
-type Parser func(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp, historyChan chan *HistoryEntry) ([]*HistoryEntry, error)
+type Parser func(env *environments.Environment, scanner *bufio.Scanner, filter *utils.Regexp, historyChan chan *HistoryEntry) ([]*HistoryEntry, error)
 
 var (
-	bashTimestampRegexp = regexp.MustCompile(`^#'s*\d+$`)
-	zshLineRegexp       = regexp.MustCompile(`^:\s*(\d*)\s*:(\d*)\s*;(.*)`)
+	bashTimestampRegexp = utils.CreateRegexp(`^#'s*\d+$`)
+	zshLineRegexp       = utils.CreateRegexp(`^:\s*(\d*)\s*:(\d*)\s*;(.*)`)
 
 	historyEventsCapacity = 5000
 )
@@ -43,7 +44,7 @@ func getParser(env *environments.Environment) Parser {
 	}
 }
 
-func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp, historyChan chan *HistoryEntry) ([]*HistoryEntry, error) {
+func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *utils.Regexp, historyChan chan *HistoryEntry) ([]*HistoryEntry, error) {
 	defer close(historyChan)
 
 	var currentNumber uint = 0
@@ -83,7 +84,7 @@ func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *re
 			currentEvent = new(HistoryEntry)
 		}
 
-		if bashTimestampRegexp.MatchString(text) {
+		if bashTimestampRegexp.Match(text) {
 			logger.WithFields(logrus.Fields{
 				"currentEvent":      currentEvent,
 				"continueToConsume": continueToConsume,
@@ -109,7 +110,7 @@ func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *re
 				}).Warn("Cannot convert timestamp")
 			}
 		} else {
-			if filter.MatchString(text) {
+			if filter == nil || filter.Match(text) {
 				currentEvent.command += text
 				currentEvent.number = currentNumber
 				currentEvent.timestamp = currentTime
@@ -140,7 +141,7 @@ func parseBash(env *environments.Environment, scanner *bufio.Scanner, filter *re
 	return scanEnd(scanner, events)
 }
 
-func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *regexp.Regexp, historyChan chan *HistoryEntry) ([]*HistoryEntry, error) {
+func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *utils.Regexp, historyChan chan *HistoryEntry) ([]*HistoryEntry, error) {
 	defer close(historyChan)
 
 	var currentNumber uint = 0
@@ -179,34 +180,40 @@ func parseZsh(env *environments.Environment, scanner *bufio.Scanner, filter *reg
 			currentEvent = new(HistoryEntry)
 		}
 
-		matcher := zshLineRegexp.FindStringSubmatch(text)
-		if matcher == nil {
-			logger.WithFields(logrus.Fields{
-				"currentEvent":      currentEvent,
-				"continueToConsume": continueToConsume,
-				"currentNumber":     currentNumber,
-				"text":              text,
-				"regexp":            zshLineRegexp,
-			}).Info("Text does not match regexp")
+		groups, err := zshLineRegexp.Groups(text)
+		if err != nil {
 			continue
 		}
+		timestamp, command := groups[1], groups[3]
 
-		timestamp := matcher[1]
-		command := matcher[3]
-		if timestamp == "" || command == "" {
-			logger.WithFields(logrus.Fields{
-				"currentEvent":      currentEvent,
-				"continueToConsume": continueToConsume,
-				"currentNumber":     currentNumber,
-				"text":              text,
-				"regexp":            zshLineRegexp,
-				"matcher":           matcher,
-			}).Info("Timestamp and command are empty so skip.")
-			continue
-		}
+		// matcher := zshLineRegexp.FindStringSubmatch(text)
+		// if matcher == nil {
+		// 	logger.WithFields(logrus.Fields{
+		// 		"currentEvent":      currentEvent,
+		// 		"continueToConsume": continueToConsume,
+		// 		"currentNumber":     currentNumber,
+		// 		"text":              text,
+		// 		"regexp":            zshLineRegexp,
+		// 	}).Info("Text does not match regexp")
+		// 	continue
+		// }
+
+		// timestamp := matcher[1]
+		// command := matcher[3]
+		// if timestamp == "" || command == "" {
+		// 	logger.WithFields(logrus.Fields{
+		// 		"currentEvent":      currentEvent,
+		// 		"continueToConsume": continueToConsume,
+		// 		"currentNumber":     currentNumber,
+		// 		"text":              text,
+		// 		"regexp":            zshLineRegexp,
+		// 		"matcher":           matcher,
+		// 	}).Info("Timestamp and command are empty so skip.")
+		// 	continue
+		// }
 		currentNumber++
 
-		if filter != nil && !filter.MatchString(command) {
+		if filter != nil && !filter.Match(command) {
 			logger.WithFields(logrus.Fields{
 				"currentEvent":      currentEvent,
 				"continueToConsume": continueToConsume,
