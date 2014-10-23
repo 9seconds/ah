@@ -2,11 +2,11 @@ package history_entries
 
 import (
 	"bufio"
-	"strings"
 	"strconv"
+	"strings"
 
-	"../utils"
 	"../environments"
+	"../utils"
 )
 
 var (
@@ -64,48 +64,48 @@ func getParser(env *environments.Environment) Parser {
 func parseBash(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp, historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
 	continueToConsume := false
 	if bashTimestampRegexp.Match(text) {
-			if converted, err := strconv.Atoi(text[1:]); err == nil {
-				currentEvent.timestamp = converted
-			}
-		} else {
-			if filter == nil || filter.Match(text) {
-				currentEvent.command += text
-				currentEvent.number = currentNumber
-
-				continueToConsume = strings.HasSuffix(text, "\\")
-				if !continueToConsume {
-					currentEvent = keeper.Commit(currentEvent, historyChan)
-				}
-			}
-			currentNumber++
+		if converted, err := strconv.Atoi(text[1:]); err == nil {
+			currentEvent.timestamp = converted
 		}
+	} else {
+		if filter == nil || filter.Match(text) {
+			currentEvent.command += text
+			currentEvent.number = currentNumber
+
+			continueToConsume = strings.HasSuffix(text, "\\")
+			if !continueToConsume {
+				currentEvent = keeper.Commit(currentEvent, historyChan)
+			}
+		}
+		currentNumber++
+	}
 
 	return continueToConsume, currentNumber, currentEvent
 }
 
 func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp, historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
-		continueToConsume := false
+	continueToConsume := false
 	groups, err := zshLineRegexp.Groups(text)
 
-		if err != nil {
-			return continueToConsume, currentNumber, currentEvent
-		}
-		timestamp, command := groups[1], groups[2]
-		currentNumber++
-
-		if filter != nil && !filter.Match(command) {
-			return continueToConsume, currentNumber, currentEvent
-		}
-
-		converted, _ := strconv.Atoi(timestamp)
-		currentEvent.command += command
-		currentEvent.number = currentNumber
-		currentEvent.timestamp = converted
-
-		continueToConsume = strings.HasSuffix(text, "\\")
-		if !continueToConsume {
-			currentEvent = keeper.Commit(currentEvent, historyChan)
-		}
-
+	if err != nil {
 		return continueToConsume, currentNumber, currentEvent
+	}
+	timestamp, command := groups[1], groups[2]
+	currentNumber++
+
+	if filter != nil && !filter.Match(command) {
+		return continueToConsume, currentNumber, currentEvent
+	}
+
+	converted, _ := strconv.Atoi(timestamp)
+	currentEvent.command += command
+	currentEvent.number = currentNumber
+	currentEvent.timestamp = converted
+
+	continueToConsume = strings.HasSuffix(text, "\\")
+	if !continueToConsume {
+		currentEvent = keeper.Commit(currentEvent, historyChan)
+	}
+
+	return continueToConsume, currentNumber, currentEvent
 }

@@ -29,21 +29,21 @@ type singleKeeper struct {
 
 type preciseNumberKeeper struct {
 	singleKeeper
-	currentIndex int
+	currentIndex  int
 	preciseNumber int
 }
 
 type allKeeper struct {
 	currentIndex int
-	entries []HistoryEntry
+	entries      []HistoryEntry
 }
 
 type rangeKeeper struct {
-	current *HistoryEntry
+	current      *HistoryEntry
 	currentIndex int
-	start int
-	finish int
-	entries []HistoryEntry
+	start        int
+	finish       int
+	entries      []HistoryEntry
 }
 
 func (sk *singleKeeper) Init() *HistoryEntry {
@@ -104,7 +104,7 @@ func (rk *rangeKeeper) SetLimits(start, finish int) {
 }
 
 func (rk *rangeKeeper) Init() *HistoryEntry {
-	rk.entries = make([]HistoryEntry, rk.finish - rk.start)
+	rk.entries = make([]HistoryEntry, rk.finish-rk.start)
 	rk.current = new(HistoryEntry)
 	return rk.current
 }
