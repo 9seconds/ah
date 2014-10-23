@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bufio"
+	"compress/gzip"
 	"fmt"
 	"os"
 	"strconv"
@@ -30,8 +31,13 @@ func ListTrace(argument string, env *environments.Environment) {
 
 	file := utils.Open(filename)
 	defer file.Close()
+	ungzippedFile, err := gzip.NewReader(file)
+	if err != nil {
+		panic(err)
+	}
+	scanner := bufio.NewScanner(ungzippedFile)
 
-	scanner := bufio.NewScanner(file)
+	// scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		fmt.Println(scanner.Text())
 	}

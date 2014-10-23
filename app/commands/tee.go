@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"bufio"
+	"compress/gzip"
 	"io"
 	"io/ioutil"
 	"os"
@@ -20,7 +20,7 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	if err != nil {
 		panic("Cannot create temporary file")
 	}
-	bufferedOutput := bufio.NewWriter(output)
+	bufferedOutput := gzip.NewWriter(output)
 
 	combinedStdout := io.MultiWriter(os.Stdout, bufferedOutput)
 	combinedStderr := io.MultiWriter(os.Stderr, bufferedOutput)
@@ -48,7 +48,7 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 
 	commandError := command.Wait()
 
-	bufferedOutput.Flush()
+	bufferedOutput.Close()
 	output.Close()
 
 	commands, err_ := history_entries.GetCommands(nil, env)
