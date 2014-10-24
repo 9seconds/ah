@@ -54,7 +54,7 @@ Options:
     -z, --fuzzy                                           Interpret -g pattern as fuzzy match string.
     -v, --debug                                           Shows a debug log of command execution.`
 
-const version = "ah 0.5"
+const version = "ah 0.6"
 
 var validateBookmarkName = utils.CreateRegexp(`^\w(\w|\d)*$`)
 
