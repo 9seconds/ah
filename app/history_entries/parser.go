@@ -101,7 +101,7 @@ func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *Hist
 	if err != nil {
 		return continueToConsume, currentNumber, currentEvent
 	}
-	timestamp, command := groups[1], groups[2]
+	timestamp, command := groups[0], groups[1]
 	currentNumber++
 
 	if filter != nil && !filter.Match(command) {
