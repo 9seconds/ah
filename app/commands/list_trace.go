@@ -35,9 +35,8 @@ func ListTrace(argument string, env *environments.Environment) {
 	if err != nil {
 		panic(err)
 	}
-	scanner := bufio.NewScanner(ungzippedFile)
 
-	// scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(ungzippedFile)
 	for scanner.Scan() {
 		fmt.Println(scanner.Text())
 	}

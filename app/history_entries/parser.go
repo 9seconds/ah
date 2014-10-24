@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"strconv"
 	"strings"
-//	"fmt"
 
 	logrus "github.com/Sirupsen/logrus"
 

@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	// "regexp"
 
 	"../environments"
 	"../history_entries"

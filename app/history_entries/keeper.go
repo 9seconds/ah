@@ -3,7 +3,6 @@ package history_entries
 import (
 	"os"
 	"strconv"
-//	"fmt"
 )
 
 var historyEventsCapacity = 5000

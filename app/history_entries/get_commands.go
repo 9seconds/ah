@@ -3,9 +3,6 @@ package history_entries
 import (
 	"bufio"
 	"errors"
-	// "regexp"
-
-	// logrus "github.com/Sirupsen/logrus"
 
 	"../environments"
 	"../utils"

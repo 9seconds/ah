@@ -6,7 +6,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-//	"fmt"
 )
 
 func SplitCommandToChunks(cmd string) (string, []string) {
