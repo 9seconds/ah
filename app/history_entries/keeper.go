@@ -105,14 +105,14 @@ func (rk *rangeKeeper) SetLimits(start, finish int) {
 }
 
 func (rk *rangeKeeper) Init() *HistoryEntry {
-	rk.entries = make([]HistoryEntry, rk.finish-rk.start)
+	rk.entries = make([]HistoryEntry, rk.finish-rk.start+1)
 	rk.current = new(HistoryEntry)
 	return rk.current
 }
 
 func (rk *rangeKeeper) Commit(event *HistoryEntry, historyChannel chan *HistoryEntry) *HistoryEntry {
 	historyChannel <- event
-	if rk.start < rk.currentIndex && rk.currentIndex + 1 < rk.finish {
+	if rk.start <= rk.currentIndex && rk.currentIndex <= rk.finish {
 		rk.entries[rk.currentIndex-rk.start] = *rk.current
 		rk.current = &rk.entries[rk.currentIndex-rk.start+1]
 	}
@@ -121,7 +121,7 @@ func (rk *rangeKeeper) Commit(event *HistoryEntry, historyChannel chan *HistoryE
 }
 
 func (rk *rangeKeeper) Continue() bool {
-	return rk.currentIndex + 1 < rk.finish
+	return rk.currentIndex < rk.finish
 }
 
 func (rk *rangeKeeper) Result() interface{} {

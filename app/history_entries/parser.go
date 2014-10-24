@@ -99,7 +99,7 @@ func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *Hist
 	}
 
 	converted, _ := strconv.Atoi(timestamp)
-	currentEvent.command += command
+	currentEvent.command = command
 	currentEvent.number = currentNumber
 	currentEvent.timestamp = converted
 

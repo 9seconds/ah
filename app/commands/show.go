@@ -19,7 +19,6 @@ func Show(slice *slices.Slice, filter *utils.Regexp, env *environments.Environme
 			return
 		}
 		commands = keeper.Result().([]history_entries.HistoryEntry)
-		fmt.Println("commands", commands)
 	} else {
 		keeper, err := history_entries.GetCommands(history_entries.GET_COMMANDS_ALL, filter, env)
 		if err != nil {
@@ -33,7 +32,6 @@ func Show(slice *slices.Slice, filter *utils.Regexp, env *environments.Environme
 		}
 		commands = toBeRanged[sliceStart:sliceFinish]
 	}
-	fmt.Println("\n\n\n")
 
 	for idx := 0; idx < len(commands); idx++ {
 		fmt.Println(commands[idx].ToString(env))
