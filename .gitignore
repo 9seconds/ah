@@ -29,3 +29,4 @@ _testmain.go
 .idea/*
 build/*
 ah
+Godeps/_workspace/*

@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	markHasHistory    = '*'
+	markHasHistory   = '*'
 	markHasNoHistory = ' '
 )
 
