@@ -71,7 +71,7 @@ func (he HistoryEntry) ToString(env *environments.Environment) string {
 
 	timestamp := ""
 	if formattedTimestamp, err := he.GetFormattedTime(env); err == nil {
-		timestamp = "\t" + formattedTimestamp
+		timestamp = "  (" + formattedTimestamp + ")"
 	}
 
 	history := MARK_HAS_NO_HISTORY
@@ -79,7 +79,7 @@ func (he HistoryEntry) ToString(env *environments.Environment) string {
 		history = MARK_HAS_HISTORY
 	}
 
-	return fmt.Sprintf("!%d %c%s\t%s", number, history, timestamp, command)
+	return fmt.Sprintf("!%-5d%s %c  %s", number, timestamp, history, command)
 }
 
 func (he HistoryEntry) GetTraceName() string {
