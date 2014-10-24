@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	logrus "github.com/Sirupsen/logrus"
-	profile "github.com/davecheney/profile"
 	docopt "github.com/docopt/docopt-go"
 
 	"github.com/9seconds/ah/app/commands"
@@ -55,7 +54,7 @@ Options:
     -z, --fuzzy                                           Interpret -g pattern as fuzzy match string.
     -v, --debug                                           Shows a debug log of command execution.`
 
-const version = "ah 0.4"
+const version = "ah 0.5"
 
 var validateBookmarkName = utils.CreateRegexp(`^\w(\w|\d)*$`)
 
@@ -68,7 +67,6 @@ func main() {
 			os.Exit(1)
 		}
 	}()
-	defer profile.Start(profile.CPUProfile).Stop()
 
 	arguments, err := docopt.Parse(docoptOptions, nil, true, version, false)
 	if err != nil {

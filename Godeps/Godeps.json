@@ -8,10 +8,6 @@
 			"Rev": "2e36101a197f56f60ca6c37c3c256ed3713a9649"
 		},
 		{
-			"ImportPath": "github.com/davecheney/profile",
-			"Rev": "c29d1a1565bca9fbeed5eed0e5d52ba78469a16b"
-		},
-		{
 			"ImportPath": "github.com/docopt/docopt-go",
 			"Comment": "0.6.1-1-gc5dac53",
 			"Rev": "c5dac536301992c0371c6115d998fb62944bfad3"
