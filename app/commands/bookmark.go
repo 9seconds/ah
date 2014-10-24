@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/9seconds/ah/app/environments"
-	"github.com/9seconds/ah/app/history_entries"
+	"github.com/9seconds/ah/app/historyentries"
 )
 
 // Bookmark implements "b" (bookmark) command.
@@ -14,11 +14,11 @@ func Bookmark(commandNumber int, bookmarkAs string, env *environments.Environmen
 		panic("Command number should be >= 0")
 	}
 
-	commandsKeeper, err := history_entries.GetCommands(history_entries.GET_COMMANDS_ALL, nil, env)
+	commandsKeeper, err := historyentries.GetCommands(historyentries.GetCommandsAll, nil, env)
 	if err != nil {
 		panic(err)
 	}
-	commands := commandsKeeper.Result().([]history_entries.HistoryEntry)
+	commands := commandsKeeper.Result().([]historyentries.HistoryEntry)
 	if len(commands) <= commandNumber {
 		panic("Command number does not exist")
 	}

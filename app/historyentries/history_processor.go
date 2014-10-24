@@ -1,4 +1,4 @@
-package history_entries
+package historyentries
 
 import (
 	logrus "github.com/Sirupsen/logrus"

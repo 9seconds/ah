@@ -11,7 +11,7 @@ import (
 	pty "github.com/kr/pty"
 
 	"github.com/9seconds/ah/app/environments"
-	"github.com/9seconds/ah/app/history_entries"
+	"github.com/9seconds/ah/app/historyentries"
 	"github.com/9seconds/ah/app/utils"
 )
 
@@ -52,11 +52,11 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	bufferedOutput.Close()
 	output.Close()
 
-	preciseCommand, cmdErr := history_entries.GetCommands(history_entries.GET_COMMANDS_SINGLE, nil, env)
+	preciseCommand, cmdErr := historyentries.GetCommands(historyentries.GetCommandsSingle, nil, env)
 	if cmdErr != nil {
 		panic("Sorry, cannot detect the number of the command")
 	}
-	cmd := preciseCommand.Result().(history_entries.HistoryEntry)
+	cmd := preciseCommand.Result().(historyentries.HistoryEntry)
 
 	commandHash := cmd.GetTraceName()
 	os.Rename(output.Name(), env.GetTraceFileName(commandHash))

@@ -4,27 +4,27 @@ import (
 	"fmt"
 
 	"github.com/9seconds/ah/app/environments"
-	"github.com/9seconds/ah/app/history_entries"
+	"github.com/9seconds/ah/app/historyentries"
 	"github.com/9seconds/ah/app/slices"
 	"github.com/9seconds/ah/app/utils"
 )
 
 // Show implements s (show) command.
 func Show(slice *slices.Slice, filter *utils.Regexp, env *environments.Environment) {
-	var commands []history_entries.HistoryEntry
+	var commands []historyentries.HistoryEntry
 
 	if slice.Start >= 0 && slice.Finish >= 0 {
-		keeper, err := history_entries.GetCommands(history_entries.GET_COMMANDS_RANGE, filter, env, slice.Start, slice.Finish)
+		keeper, err := historyentries.GetCommands(historyentries.GetCommandsRange, filter, env, slice.Start, slice.Finish)
 		if err != nil {
 			return
 		}
-		commands = keeper.Result().([]history_entries.HistoryEntry)
+		commands = keeper.Result().([]historyentries.HistoryEntry)
 	} else {
-		keeper, err := history_entries.GetCommands(history_entries.GET_COMMANDS_ALL, filter, env)
+		keeper, err := historyentries.GetCommands(historyentries.GetCommandsAll, filter, env)
 		if err != nil {
 			return
 		}
-		toBeRanged := keeper.Result().([]history_entries.HistoryEntry)
+		toBeRanged := keeper.Result().([]historyentries.HistoryEntry)
 		sliceStart := slices.GetSliceIndex(slice.Start, len(toBeRanged))
 		sliceFinish := slices.GetSliceIndex(slice.Finish, len(toBeRanged))
 		if sliceStart < 0 || sliceFinish < 0 || sliceFinish <= sliceStart {

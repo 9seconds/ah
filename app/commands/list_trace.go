@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/9seconds/ah/app/environments"
-	"github.com/9seconds/ah/app/history_entries"
+	"github.com/9seconds/ah/app/historyentries"
 	"github.com/9seconds/ah/app/utils"
 )
 
@@ -19,11 +19,11 @@ func ListTrace(argument string, env *environments.Environment) {
 		panic(fmt.Sprintf("Cannot convert argument to a command number: %s", argument))
 	}
 
-	commands, err := history_entries.GetCommands(history_entries.GET_COMMANDS_PRECISE, nil, env, number)
+	commands, err := historyentries.GetCommands(historyentries.GetCommandsPrecise, nil, env, number)
 	if err != nil {
 		panic(err)
 	}
-	command, _ := commands.Result().(history_entries.HistoryEntry)
+	command, _ := commands.Result().(historyentries.HistoryEntry)
 	hashFilename := command.GetTraceName()
 	filename := env.GetTraceFileName(hashFilename)
 	if _, err := os.Stat(filename); os.IsNotExist(err) {

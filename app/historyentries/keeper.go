@@ -1,4 +1,4 @@
-package history_entries
+package historyentries
 
 import (
 	"os"
@@ -16,6 +16,8 @@ func init() {
 	}
 }
 
+// Keeper stores history entries with some own strategy.
+// Please use getKeeper to get a proper implementation.
 type Keeper interface {
 	Init() *HistoryEntry
 	Commit(*HistoryEntry, chan *HistoryEntry) *HistoryEntry
@@ -127,15 +129,15 @@ func (rk *rangeKeeper) Result() interface{} {
 
 func getKeeper(mode GetCommandsMode, varargs ...int) Keeper {
 	switch mode {
-	case GET_COMMANDS_ALL:
+	case GetCommandsAll:
 		return new(allKeeper)
-	case GET_COMMANDS_RANGE:
+	case GetCommandsRange:
 		keeper := new(rangeKeeper)
 		keeper.SetLimits(varargs[0], varargs[1])
 		return keeper
-	case GET_COMMANDS_SINGLE:
+	case GetCommandsSingle:
 		return new(singleKeeper)
-	case GET_COMMANDS_PRECISE:
+	case GetCommandsPrecise:
 		keeper := new(preciseNumberKeeper)
 		keeper.SetNumber(varargs[0])
 		return keeper

@@ -1,4 +1,4 @@
-package history_entries
+package historyentries
 
 import (
 	"bufio"
@@ -16,9 +16,13 @@ var (
 	zshLineRegexp       = utils.CreateRegexp(`^: (\d+):\d;(.*)$`)
 )
 
-type Parser func(Keeper, *bufio.Scanner, *utils.Regexp, chan *HistoryEntry) (Keeper, error)
+type (
+	// Parser is a signature for a function which parses file and returns a Keeper.
+	Parser func(Keeper, *bufio.Scanner, *utils.Regexp, chan *HistoryEntry) (Keeper, error)
 
-type ShellSpecificParser func(Keeper, string, uint, *HistoryEntry, *utils.Regexp, chan *HistoryEntry) (bool, uint, *HistoryEntry)
+	// ShellSpecificParser is a signature for a function which implements shell specific logic for parsing.
+	ShellSpecificParser func(Keeper, string, uint, *HistoryEntry, *utils.Regexp, chan *HistoryEntry) (bool, uint, *HistoryEntry)
+)
 
 func getParser(env *environments.Environment) Parser {
 	shell, _ := env.GetShell()
@@ -32,7 +36,7 @@ func getParser(env *environments.Environment) Parser {
 	return func(keeper Keeper, scanner *bufio.Scanner, filter *utils.Regexp, historyChan chan *HistoryEntry) (Keeper, error) {
 		defer close(historyChan)
 
-		var currentNumber uint = 0
+		var currentNumber uint
 		continueToConsume := false
 		currentEvent := keeper.Init()
 
@@ -65,9 +69,8 @@ func getParser(env *environments.Environment) Parser {
 
 		if err := scanner.Err(); err != nil {
 			return nil, err
-		} else {
-			return keeper, nil
 		}
+		return keeper, nil
 	}
 }
 
