@@ -11,10 +11,15 @@ LINUX_ARCH      := amd64 386 arm
 DARWIN_ARCH     := amd64 386
 FREEBSD_ARCH    := amd64 386 arm
 
+DOCKER_PROG     := docker
+DOCKER_GOPATH   := /go
+DOCKER_WORKDIR  := $(DOCKER_GOPATH)/src/$(GOLANG_AH)
+DOCKER_IMAGE    := golang:1.3.3-cross
+
 # ----------------------------------------------------------------------------
 
 define crosscompile
-	GOOS=$(1) GOARCH=$(2) go build -o $(CROSS_BUILD_DIR)/linux-$(2) $(GOLANG_AH)
+	GOOS=$(1) GOARCH=$(2) go build -o $(CROSS_BUILD_DIR)/$(1)-$(2) $(GOLANG_AH)
 endef
 
 # ----------------------------------------------------------------------------
@@ -72,3 +77,7 @@ cross-darwin-%: restore cross-build-directory
 
 cross-freebsd-%: restore cross-build-directory
 	$(call crosscompile,freebsd,$*)
+
+cross-docker:
+	$(DOCKER_PROG) run --rm -i -t -v "$(ROOT_DIR)":$(DOCKER_WORKDIR) -w $(DOCKER_WORKDIR) $(DOCKER_IMAGE) \
+	bash -i -c "make -j 4 cross"
