@@ -22,7 +22,7 @@ func (r *Regexp) Groups(suspected string) ([]string, error) {
 
 	groups := make([]string, matcher.Groups())
 	for idx := 0; idx < len(groups); idx++ {
-		groups[idx] = matcher.GroupString(idx+1)
+		groups[idx] = matcher.GroupString(idx + 1)
 	}
 
 	return groups, nil
