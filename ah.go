@@ -16,7 +16,7 @@ import (
 	"github.com/9seconds/ah/app/utils"
 )
 
-const options = `ah - A better history.
+const docoptOptions = `ah - A better history.
 
 Ah is a better way to traverse the history of your shell prompts. Right now it
 supports only 3 additional possibilities you are probably have dreamt about:
@@ -70,7 +70,7 @@ func main() {
 	}()
 	defer profile.Start(profile.CPUProfile).Stop()
 
-	arguments, err := docopt.Parse(options, nil, true, version, false)
+	arguments, err := docopt.Parse(docoptOptions, nil, true, version, false)
 	if err != nil {
 		panic(err)
 	}

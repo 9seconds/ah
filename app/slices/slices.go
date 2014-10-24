@@ -7,11 +7,14 @@ import (
 	"strings"
 )
 
+// Slice is just a pair of start/finish numbers. Used for show command.
 type Slice struct {
 	Start  int
 	Finish int
 }
 
+// GetSliceIndex returns fixed index based on a given length. It is required if you
+// want to support negative indexing. I want to suppor it.
 func GetSliceIndex(index int, length int) int {
 	if index >= 0 {
 		return index
@@ -19,6 +22,8 @@ func GetSliceIndex(index int, length int) int {
 	return length + index
 }
 
+// ExtractSlice extracts slice from the given arguments. Please check how show command
+// looks like to get an idea what will it construct.
 func ExtractSlice(single interface{}, start interface{}, finish interface{}) (*Slice, error) {
 	slice := new(Slice)
 

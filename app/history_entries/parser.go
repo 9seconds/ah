@@ -25,7 +25,7 @@ func getParser(env *environments.Environment) Parser {
 	logger, _ := env.GetLogger()
 
 	shellSpecific := parseBash
-	if shell == environments.SHELL_ZSH {
+	if shell == environments.ShellZsh {
 		shellSpecific = parseZsh
 	}
 

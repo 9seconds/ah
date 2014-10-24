@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+// SplitCommandToChunks splits a command to the command name and
+// its arguments.
 func SplitCommandToChunks(cmd string) (string, []string) {
 	chunks := strings.Split(cmd, " ")
 	for idx := 0; idx < len(chunks); idx++ {
@@ -17,11 +19,13 @@ func SplitCommandToChunks(cmd string) (string, []string) {
 	return chunks[0], chunks[1:]
 }
 
+// ConvertTimestamp converts timestamp to time structure
 func ConvertTimestamp(timestamp int) *time.Time {
 	converted := time.Unix(int64(timestamp), 0)
 	return &converted
 }
 
+// Open just a small wrapper on os.Open which panics if something goes wrong.
 func Open(filename string) *os.File {
 	handler, err := os.Open(filename)
 	if err != nil {
@@ -30,6 +34,9 @@ func Open(filename string) *os.File {
 	return handler
 }
 
+// Exec executes a command with arguments. Also it attaches ah incoming signal pipeline
+// to external process for a great good.
+// Return nil if ok. If not ok, returns exec.ExitError
 func Exec(cmd string, args ...string) *exec.ExitError {
 	command := exec.Command(cmd, args...)
 	command.Stdout = os.Stdout
@@ -48,6 +55,7 @@ func Exec(cmd string, args ...string) *exec.ExitError {
 	panic(err.Error())
 }
 
+// GetStatusCode returns an exit code from exec.ExitError
 func GetStatusCode(err *exec.ExitError) int {
 	if err == nil {
 		return 0

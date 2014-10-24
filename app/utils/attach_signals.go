@@ -13,6 +13,11 @@ var (
 	currentCommand *exec.Cmd
 )
 
+// AttachSignalsToProcess attaches signals for ah to external command.
+//
+// In other words, if ah executes an external command, any CTRL-C or SIGTERM
+// you are sending to ah, would be redirected to external command. It means
+// that Ctrl-C will work with ssh for example.
 func AttachSignalsToProcess(command *exec.Cmd) {
 	if currentCommand != nil {
 		panic("Command already executing")
