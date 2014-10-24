@@ -3,6 +3,7 @@ package history_entries
 import (
 	"os"
 	"strconv"
+//	"fmt"
 )
 
 var historyEventsCapacity = 5000
@@ -111,20 +112,20 @@ func (rk *rangeKeeper) Init() *HistoryEntry {
 
 func (rk *rangeKeeper) Commit(event *HistoryEntry, historyChannel chan *HistoryEntry) *HistoryEntry {
 	historyChannel <- event
-	if rk.start <= rk.currentIndex && rk.currentIndex < rk.finish {
+	if rk.start < rk.currentIndex && rk.currentIndex + 1 < rk.finish {
 		rk.entries[rk.currentIndex-rk.start] = *rk.current
-		rk.current = new(HistoryEntry)
-		rk.currentIndex++
+		rk.current = &rk.entries[rk.currentIndex-rk.start+1]
 	}
+	rk.currentIndex++
 	return rk.current
 }
 
 func (rk *rangeKeeper) Continue() bool {
-	return rk.currentIndex < rk.finish
+	return rk.currentIndex + 1 < rk.finish
 }
 
 func (rk *rangeKeeper) Result() interface{} {
-	return rk.entries[rk.currentIndex-rk.start]
+	return rk.entries[:rk.currentIndex-rk.start]
 }
 
 func getKeeper(mode GetCommandsMode, varargs ...int) Keeper {

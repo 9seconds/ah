@@ -59,7 +59,7 @@ const version = "ah 0.4"
 
 var validateBookmarkName = utils.CreateRegexp(`^\w(\w|\d)*$`)
 
-type executor func(arguments map[string]interface{}, env *environments.Environment)
+type executor func(map[string]interface{}, *environments.Environment)
 
 func main() {
 	defer func() {
