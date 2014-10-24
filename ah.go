@@ -205,7 +205,7 @@ func executeListTrace(arguments map[string]interface{}, env *environments.Enviro
 func executeBookmark(arguments map[string]interface{}, env *environments.Environment) {
 	var commandNumber int
 	if number, err := strconv.Atoi(arguments["<commandNumber>"].(string)); err != nil {
-		panic(fmt.Sprintf("Cannot understand command number: %s", commandNumber))
+		panic(fmt.Sprintf("Cannot understand command number: %d", commandNumber))
 	} else {
 		commandNumber = number
 	}
