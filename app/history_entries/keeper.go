@@ -30,8 +30,7 @@ type singleKeeper struct {
 
 type preciseNumberKeeper struct {
 	singleKeeper
-	currentIndex  int
-	preciseNumber int
+	preciseNumber uint
 }
 
 type allKeeper struct {
@@ -65,16 +64,15 @@ func (sk *singleKeeper) Result() interface{} {
 }
 
 func (pnk *preciseNumberKeeper) Commit(event *HistoryEntry, historyChannel chan *HistoryEntry) *HistoryEntry {
-	pnk.currentIndex++
 	return pnk.singleKeeper.Commit(event, historyChannel)
 }
 
 func (pnk *preciseNumberKeeper) Continue() bool {
-	return pnk.currentIndex <= pnk.preciseNumber
+	return pnk.current.number != pnk.preciseNumber
 }
 
 func (pnk *preciseNumberKeeper) SetNumber(number int) {
-	pnk.preciseNumber = number
+	pnk.preciseNumber = uint(number)
 }
 
 func (ak *allKeeper) Init() *HistoryEntry {

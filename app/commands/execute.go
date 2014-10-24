@@ -14,7 +14,7 @@ func ExecuteCommandNumber(number int, env *environments.Environment) {
 		panic("Cannot find such command")
 	}
 
-	commands, err := history_entries.GetCommands(history_entries.GET_COMMANDS_PRECISE, nil, env)
+	commands, err := history_entries.GetCommands(history_entries.GET_COMMANDS_PRECISE, nil, env, number)
 	if err != nil {
 		panic(err)
 	}

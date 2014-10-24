@@ -6,6 +6,8 @@ import (
 	"strings"
 //	"fmt"
 
+	logrus "github.com/Sirupsen/logrus"
+
 	"../environments"
 	"../utils"
 )
@@ -21,6 +23,8 @@ type ShellSpecificParser func(Keeper, string, uint, *HistoryEntry, *utils.Regexp
 
 func getParser(env *environments.Environment) Parser {
 	shell, _ := env.GetShell()
+	logger, _ := env.GetLogger()
+
 	shellSpecific := parseBash
 	if shell == environments.SHELL_ZSH {
 		shellSpecific = parseZsh
@@ -36,7 +40,13 @@ func getParser(env *environments.Environment) Parser {
 		for scanner.Scan() && keeper.Continue() {
 			text := scanner.Text()
 
+			logger.WithFields(logrus.Fields{
+				"text": text,
+			}).Info("Parse history line")
+
 			if continueToConsume {
+				logger.Info("Attach the line to the previous command")
+
 				currentEvent.command += "\n" + text
 				if strings.HasSuffix(text, `\`) {
 					continue
@@ -70,7 +80,7 @@ func parseBash(keeper Keeper, text string, currentNumber uint, currentEvent *His
 		}
 	} else {
 		if filter == nil || filter.Match(text) {
-			currentEvent.command += text
+			currentEvent.command = text
 			currentEvent.number = currentNumber
 
 			continueToConsume = strings.HasSuffix(text, "\\")

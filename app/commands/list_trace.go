@@ -18,7 +18,7 @@ func ListTrace(argument string, env *environments.Environment) {
 		panic(fmt.Sprintf("Cannot convert argument to a command number: %s", argument))
 	}
 
-	commands, err := history_entries.GetCommands(history_entries.GET_COMMANDS_PRECISE, nil, env)
+	commands, err := history_entries.GetCommands(history_entries.GET_COMMANDS_PRECISE, nil, env, number)
 	if err != nil {
 		panic(err)
 	}

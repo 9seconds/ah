@@ -6,6 +6,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+//	"fmt"
 )
 
 func SplitCommandToChunks(cmd string) (string, []string) {
@@ -38,6 +39,10 @@ func Exec(cmd string, args ...string) *exec.ExitError {
 	AttachSignalsToProcess(command)
 
 	err := command.Run()
+	if err == nil {
+		return nil
+	}
+
 	if exitError, ok := err.(*exec.ExitError); ok {
 		return exitError
 	}
