@@ -1,0 +1,33 @@
+{
+	"ImportPath": "github.com/9seconds/ah",
+	"GoVersion": "go1.2.1",
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.5.1-35-g2e36101",
+			"Rev": "2e36101a197f56f60ca6c37c3c256ed3713a9649"
+		},
+		{
+			"ImportPath": "github.com/davecheney/profile",
+			"Rev": "c29d1a1565bca9fbeed5eed0e5d52ba78469a16b"
+		},
+		{
+			"ImportPath": "github.com/docopt/docopt-go",
+			"Comment": "0.6.1-1-gc5dac53",
+			"Rev": "c5dac536301992c0371c6115d998fb62944bfad3"
+		},
+		{
+			"ImportPath": "github.com/glenn-brown/golang-pkg-pcre/src/pkg/pcre",
+			"Rev": "48bb82a8b8ceea98f4e97825b43870f6ba1970d6"
+		},
+		{
+			"ImportPath": "github.com/kr/pty",
+			"Comment": "release.r56-19-g67e2db2",
+			"Rev": "67e2db24c831afa6c64fc17b4a143390674365ef"
+		},
+		{
+			"ImportPath": "github.com/weidewang/go-strftime",
+			"Rev": "7e82c21e2e5cf5e8ab11763f19f937c9fd6e47aa"
+		}
+	]
+}
