@@ -146,6 +146,12 @@ func (e *Environment) SetHistFile(path string) error {
 	return nil
 }
 
+// DiscoverHistTimeFormat discovers time format of the history entries from the environment.
+func (e *Environment) DiscoverHistTimeFormat() error {
+	e.histTimeFormat = os.Getenv("HISTTIMEFORMAT")
+	return nil
+}
+
 // GetHistTimeFormat returns a history time format.
 func (e *Environment) GetHistTimeFormat() (string, error) {
 	if e.histTimeFormat == "" {
@@ -192,7 +198,7 @@ func (e *Environment) EnableDebugLog() {
 // DisableDebugLog makes logging silent.
 func (e *Environment) DisableDebugLog() {
 	e.log = logrus.New()
-	e.log.Out = os.Discard
+	e.log.Out = ioutil.Discard
 	e.log.Level = logrus.ErrorLevel
 }
 

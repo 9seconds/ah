@@ -92,7 +92,9 @@ func main() {
 	}
 
 	argHistTimeFormat := arguments["--histtimeformat"]
-	if argHistTimeFormat != nil {
+	if argHistTimeFormat == nil {
+		env.DiscoverHistTimeFormat()
+	} else {
 		env.SetHistTimeFormat(argHistTimeFormat.(string))
 	}
 
