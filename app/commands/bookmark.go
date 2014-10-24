@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"../environments"
-	"../history_entries"
+	"github.com/9seconds/ah/app/environments"
+	"github.com/9seconds/ah/app/history_entries"
 )
 
 func Bookmark(commandNumber int, bookmarkAs string, env *environments.Environment) {

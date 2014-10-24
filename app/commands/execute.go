@@ -4,9 +4,9 @@ import (
 	"io/ioutil"
 	"os"
 
-	"../environments"
-	"../history_entries"
-	"../utils"
+	"github.com/9seconds/ah/app/environments"
+	"github.com/9seconds/ah/app/history_entries"
+	"github.com/9seconds/ah/app/utils"
 )
 
 func ExecuteCommandNumber(number int, env *environments.Environment) {

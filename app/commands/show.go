@@ -3,10 +3,10 @@ package commands
 import (
 	"fmt"
 
-	"../environments"
-	"../history_entries"
-	"../slices"
-	"../utils"
+	"github.com/9seconds/ah/app/environments"
+	"github.com/9seconds/ah/app/history_entries"
+	"github.com/9seconds/ah/app/slices"
+	"github.com/9seconds/ah/app/utils"
 )
 
 func Show(slice *slices.Slice, filter *utils.Regexp, env *environments.Environment) {

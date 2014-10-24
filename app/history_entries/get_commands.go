@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"errors"
 
-	"../environments"
-	"../utils"
+	"github.com/9seconds/ah/app/environments"
+	"github.com/9seconds/ah/app/utils"
 )
 
 type GetCommandsMode uint8

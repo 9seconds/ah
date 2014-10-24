@@ -7,9 +7,9 @@ import (
 	"os"
 	"strconv"
 
-	"../environments"
-	"../history_entries"
-	"../utils"
+	"github.com/9seconds/ah/app/environments"
+	"github.com/9seconds/ah/app/history_entries"
+	"github.com/9seconds/ah/app/utils"
 )
 
 func ListTrace(argument string, env *environments.Environment) {

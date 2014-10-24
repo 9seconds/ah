@@ -10,10 +10,10 @@ import (
 	profile "github.com/davecheney/profile"
 	docopt "github.com/docopt/docopt-go"
 
-	"./app/commands"
-	"./app/environments"
-	"./app/slices"
-	"./app/utils"
+	"github.com/9seconds/ah/app/commands"
+	"github.com/9seconds/ah/app/environments"
+	"github.com/9seconds/ah/app/slices"
+	"github.com/9seconds/ah/app/utils"
 )
 
 const options = `ah - A better history.

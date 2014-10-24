@@ -13,7 +13,7 @@ import (
 	logrus "github.com/Sirupsen/logrus"
 	strftime "github.com/weidewang/go-strftime"
 
-	"../utils"
+	"github.com/9seconds/ah/app/utils"
 )
 
 const (

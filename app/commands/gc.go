@@ -7,7 +7,7 @@ import (
 
 	logrus "github.com/Sirupsen/logrus"
 
-	"../environments"
+	"github.com/9seconds/ah/app/environments"
 )
 
 type GcType uint8

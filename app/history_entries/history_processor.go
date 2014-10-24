@@ -3,7 +3,7 @@ package history_entries
 import (
 	logrus "github.com/Sirupsen/logrus"
 
-	"../environments"
+	"github.com/9seconds/ah/app/environments"
 )
 
 func processHistories(env *environments.Environment) (chan bool, chan *HistoryEntry) {

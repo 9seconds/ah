@@ -7,8 +7,8 @@ import (
 
 	logrus "github.com/Sirupsen/logrus"
 
-	"../environments"
-	"../utils"
+	"github.com/9seconds/ah/app/environments"
+	"github.com/9seconds/ah/app/utils"
 )
 
 var (
