@@ -252,7 +252,7 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 	var gcType commands.GcType
 
 	if arguments["--keepLatest"].(bool) {
-		gcType = commands.GC_KEEP_LATEST
+		gcType = commands.GcKeepLatest
 		paramString := arguments["<keepLatest>"].(string)
 		paramConverted, err := strconv.Atoi(paramString)
 		if err != nil {
@@ -260,7 +260,7 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 		}
 		param = paramConverted
 	} else if arguments["--olderThan"].(bool) {
-		gcType = commands.GC_OLDER_THAN
+		gcType = commands.GcOlderThan
 		paramString := arguments["<olderThan>"].(string)
 		paramConverted, err := strconv.Atoi(paramString)
 		if err != nil {
@@ -268,7 +268,7 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 		}
 		param = paramConverted
 	} else if arguments["--all"].(bool) {
-		gcType = commands.GC_ALL
+		gcType = commands.GcAll
 		param = 1
 	} else {
 		panic("Unknown command")

@@ -10,33 +10,35 @@ import (
 	"github.com/9seconds/ah/app/environments"
 )
 
+// GcType is the type of GC to execute
 type GcType uint8
 
+// Types of garbage collecting.
 const (
-	GC_ALL GcType = iota
-	GC_KEEP_LATEST
-	GC_OLDER_THAN
+	GcAll GcType = iota
+	GcKeepLatest
+	GcOlderThan
 )
 
-const SECONDS_IN_DAY = 60 * 60 * 24
+const secondsInDay = 60 * 60 * 24
 
-type FileInfoSorter struct {
+type fileInfoSorter struct {
 	content []os.FileInfo
 }
 
-func (fis FileInfoSorter) Len() int {
+func (fis fileInfoSorter) Len() int {
 	return len(fis.content)
 }
 
-func (fis FileInfoSorter) Less(i, j int) bool {
+func (fis fileInfoSorter) Less(i, j int) bool {
 	return fis.content[i].ModTime().Unix() < fis.content[j].ModTime().Unix()
 }
 
-func (fis FileInfoSorter) Swap(i, j int) {
+func (fis fileInfoSorter) Swap(i, j int) {
 	fis.content[i], fis.content[j] = fis.content[j], fis.content[i]
 }
 
-func (fis FileInfoSorter) YoungerThan(timestamp int64) []os.FileInfo {
+func (fis fileInfoSorter) YoungerThan(timestamp int64) []os.FileInfo {
 	binarySearchFunc := func(i int) bool {
 		return fis.content[i].ModTime().Unix() > timestamp
 	}
@@ -44,30 +46,31 @@ func (fis FileInfoSorter) YoungerThan(timestamp int64) []os.FileInfo {
 	return fis.content[:index]
 }
 
-func (fis FileInfoSorter) Tail(first int) []os.FileInfo {
+func (fis fileInfoSorter) Tail(first int) []os.FileInfo {
 	if first >= len(fis.content) {
 		return fis.content
 	}
 	return fis.content[len(fis.content)-first:]
 }
 
+// GC implements g (garbage collecting) command.
 func GC(gcType GcType, param int, env *environments.Environment) {
 	logger, _ := env.GetLogger()
 	fileInfos, err := env.GetTraceFilenames()
 	if err != nil {
 		panic("Cannot fetch the list of trace filenames")
 	}
-	fileInfoSorter := FileInfoSorter{content: fileInfos}
-	sort.Sort(fileInfoSorter)
+	infoSorter := fileInfoSorter{content: fileInfos}
+	sort.Sort(infoSorter)
 
 	switch gcType {
-	case GC_KEEP_LATEST:
-		fileInfos = fileInfoSorter.Tail(param)
-	case GC_OLDER_THAN:
-		timestamp := time.Now().Unix() - SECONDS_IN_DAY*int64(param)
-		fileInfos = fileInfoSorter.YoungerThan(timestamp)
+	case GcKeepLatest:
+		fileInfos = infoSorter.Tail(param)
+	case GcOlderThan:
+		timestamp := time.Now().Unix() - secondsInDay*int64(param)
+		fileInfos = infoSorter.YoungerThan(timestamp)
 	default:
-		fileInfos = fileInfoSorter.content
+		fileInfos = infoSorter.content
 	}
 
 	for _, info := range fileInfos {

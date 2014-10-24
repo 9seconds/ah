@@ -9,6 +9,7 @@ import (
 	"github.com/9seconds/ah/app/utils"
 )
 
+// ExecuteCommandNumber executes command by its number in history file.
 func ExecuteCommandNumber(number int, env *environments.Environment) {
 	if number < 0 {
 		panic("Cannot find such command")
@@ -24,6 +25,7 @@ func ExecuteCommandNumber(number int, env *environments.Environment) {
 	execute(cmd)
 }
 
+// ExecuteBookmark executes command by its bookmark name.
 func ExecuteBookmark(name string, env *environments.Environment) {
 	content, err := ioutil.ReadFile(env.GetBookmarkFileName(name))
 	if err != nil {

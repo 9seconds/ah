@@ -12,6 +12,7 @@ import (
 	"github.com/9seconds/ah/app/utils"
 )
 
+// ListTrace implements l command (list trace).
 func ListTrace(argument string, env *environments.Environment) {
 	number, err := strconv.Atoi(argument)
 	if err != nil || number < 0 {

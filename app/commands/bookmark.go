@@ -8,6 +8,7 @@ import (
 	"github.com/9seconds/ah/app/history_entries"
 )
 
+// Bookmark implements "b" (bookmark) command.
 func Bookmark(commandNumber int, bookmarkAs string, env *environments.Environment) {
 	if commandNumber < 0 {
 		panic("Command number should be >= 0")

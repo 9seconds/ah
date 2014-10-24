@@ -6,7 +6,6 @@ import (
 	pcre "github.com/glenn-brown/golang-pkg-pcre/src/pkg/pcre"
 )
 
-
 // Regexp is just a wrapper to play with different regular expression libraries
 // to get the best one.
 type Regexp struct {

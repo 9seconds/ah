@@ -18,16 +18,16 @@ import (
 
 const (
 	defaultAppDir = ".ah"
-	tracesDir = "traces"
-	bookmarksDir = "bookmarks"
+	tracesDir     = "traces"
+	bookmarksDir  = "bookmarks"
 
-	defaultZshHistFile = ".zsh_history"
+	defaultZshHistFile  = ".zsh_history"
 	defaultBashHistFile = ".bash_history"
 )
 
 // Codes for the supported shells
 const (
-	ShellZsh = "zsh"
+	ShellZsh  = "zsh"
 	ShellBash = "bash"
 )
 

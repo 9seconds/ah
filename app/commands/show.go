@@ -9,6 +9,7 @@ import (
 	"github.com/9seconds/ah/app/utils"
 )
 
+// Show implements s (show) command.
 func Show(slice *slices.Slice, filter *utils.Regexp, env *environments.Environment) {
 	var commands []history_entries.HistoryEntry
 
