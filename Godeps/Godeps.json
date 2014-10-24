@@ -17,10 +17,6 @@
 			"Rev": "c5dac536301992c0371c6115d998fb62944bfad3"
 		},
 		{
-			"ImportPath": "github.com/glenn-brown/golang-pkg-pcre/src/pkg/pcre",
-			"Rev": "48bb82a8b8ceea98f4e97825b43870f6ba1970d6"
-		},
-		{
 			"ImportPath": "github.com/kr/pty",
 			"Comment": "release.r56-19-g67e2db2",
 			"Rev": "67e2db24c831afa6c64fc17b4a143390674365ef"

@@ -1,49 +1,42 @@
 # Cross platorm build with docker
 
-DOCKER_PROG := docker
-DOCKER_IMAGE := golang:1.3.3-cross
-ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+.PHONY: clean build
+
+# ----------------------------------------------------------------------------
+
 BUILD_PROG := ah
-BUILD_FILE := ah.go
+ROOT_DIR   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+GOLANG_AH  := github.com/9seconds/ah
 
-define compile
-	$(DOCKER_PROG) run --rm -i -t -v "$(ROOT_DIR)":/usr/src/app -w /usr/src/app \
-		-e GOOS=$(1) -e GOARCH=$(2) $(DOCKER_IMAGE) \
-		bash -c "go get -d -v; go build -v -o build/$(BUILD_PROG)-$(1)-$(2) $(BUILD_FILE)";
-endef
+# ----------------------------------------------------------------------------
 
-all: linux darwin freebsd
+all: clean fix vet lint build
 
-build_directory: clean
-	mkdir -p ./build
+# ----------------------------------------------------------------------------
 
-linux: linux-386 linux-amd64 linux-arm
-darwin: darwin-386 darwin-amd64
-freebsd: freebsd-386 freebsd-amd64 freebsd-arm
+fix:
+	go fix $(GOLANG_AH)/...
 
-linux-386: build_directory
-	$(call compile,linux,386)
+vet:
+	go vet $(GOLANG_AH)/...
 
-linux-amd64: build_directory
-	$(call compile,linux,amd64)
+lint:
+	golint $(GOLANG_AH)/...
 
-linux-arm: build_directory
-	$(call compile,linux,arm)
+fmt:
+	go fmt $(GOLANG_AH)/...
 
-darwin-386: build_directory
-	$(call compile,darwin,386)
+godep:
+	go get github.com/tools/godep
 
-darwin-amd64: build_directory
-	$(call compile,darwin,amd64)
+save: godep
+	godep save
 
-freebsd-386: build_directory
-	$(call compile,freebsd,386)
+restore: godep
+	godep restore
 
-freebsd-amd64: build_directory
-	$(call compile,freebsd,amd64)
-
-freebsd-arm: build_directory
-	$(call compile,freebsd,arm)
+build: restore
+	go build -o $(BUILD_PROG) $(GOLANG_AH)
 
 clean:
-	rm -rf ./build
+	rm -f $(BUILD_PROG)
