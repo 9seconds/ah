@@ -26,7 +26,7 @@ func (r *Regexp) Groups(suspected string) ([]string, error) {
 		return nil, fmt.Errorf("Cannot get groups for %s", suspected)
 	}
 
-	groups := make([]string, len(indexes)/2 - 1)
+	groups := make([]string, len(indexes)/2-1)
 	for idx := 0; idx < len(groups); idx++ {
 		groups[idx] = suspected[indexes[2*idx+2]:indexes[2*idx+3]]
 	}
