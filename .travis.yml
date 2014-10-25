@@ -8,7 +8,7 @@ install:
   - go get code.google.com/p/go.tools/cmd/vet
 
 script:
-  - make -j 4 ci
+  - make -j 4
 
 notifications:
   email:
