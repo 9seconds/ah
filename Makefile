@@ -68,6 +68,14 @@ install: restore
 prog-clean:
 	rm -f $(BUILD_PROG)
 
+update:
+	cat $(ROOT_DIR)/Godeps/Godeps.json \
+	    | grep ImportPath \
+	    | grep -v $(GOLANG_AH) \
+	    | awk '{print $$2}' \
+	    | sed 's/"//g; s/,$$//' \
+	    | xargs -n 1 godep update
+
 # ----------------------------------------------------------------------------
 
 cross-linux: $(addprefix cross-linux-,$(LINUX_ARCH))
