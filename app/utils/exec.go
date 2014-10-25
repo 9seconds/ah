@@ -90,6 +90,9 @@ func attachSignalsToProcess(command *exec.Cmd) {
 	}
 	commandLock.Lock()
 	defer commandLock.Unlock()
+	if currentCommand != nil {
+		Logger.Panic("Command already executing")
+	}
 
 	currentCommand = command
 
