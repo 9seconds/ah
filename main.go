@@ -304,8 +304,6 @@ func executeListBookmarks(_ map[string]interface{}, env *environments.Environmen
 func executeRemoveBookmarks(arguments map[string]interface{}, env *environments.Environment) {
 	logger, _ := env.GetLogger()
 
-	fmt.Println(arguments["<bookmarkToRemove>"])
-
 	bookmarks, ok := arguments["<bookmarkToRemove>"].([]string)
 	if !ok || bookmarks == nil || len(bookmarks) == 0 {
 		logger.Info("Nothing to do here")
