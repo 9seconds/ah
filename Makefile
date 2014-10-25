@@ -19,7 +19,7 @@ DOCKER_IMAGE    := golang:1.3.3-cross
 # ----------------------------------------------------------------------------
 
 define crosscompile
-	GOOS=$(1) GOARCH=$(2) go build -o $(CROSS_BUILD_DIR)/$(1)-$(2) $(GOLANG_AH)
+	GOOS=$(1) GOARCH=$(2) go build -a -o $(CROSS_BUILD_DIR)/$(1)-$(2) $(GOLANG_AH)
 endef
 
 # ----------------------------------------------------------------------------
@@ -60,10 +60,10 @@ restore: godep
 	godep restore
 
 prog-build: restore prog-clean
-	go build -o $(BUILD_PROG) $(GOLANG_AH)
+	go build -a -o $(BUILD_PROG) $(GOLANG_AH)
 
 install: restore
-	go install $(GOLANG_AH)
+	go install -a $(GOLANG_AH)
 
 prog-clean:
 	rm -f $(BUILD_PROG)
