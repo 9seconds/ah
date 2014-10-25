@@ -24,7 +24,8 @@ endef
 
 # ----------------------------------------------------------------------------
 
-all: fix vet lint prog-build
+all: tools prog-build
+tools: fix vet lint
 cross: cross-linux cross-darwin cross-freebsd
 clean: prog-clean cross-clean
 
@@ -33,17 +34,23 @@ clean: prog-clean cross-clean
 fix:
 	go fix $(GOLANG_AH)/...
 
-vet:
+vet: govet
 	go vet $(GOLANG_AH)/...
 
-lint:
+lint: golint
 	golint $(GOLANG_AH)/...
 
 fmt:
 	go fmt $(GOLANG_AH)/...
 
 godep:
-	go get github.com/tools/godep
+	go get github.com/tools/godep || true
+
+govet:
+	go get code.google.com/p/go.tools/cmd/vet || true
+
+golint:
+	go get github.com/golang/lint || true
 
 save: godep
 	godep save
