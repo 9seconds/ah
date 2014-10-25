@@ -35,8 +35,7 @@ var currentUser *user.User
 func init() {
 	fetchedCurrentUser, err := user.Current()
 	if err != nil {
-		os.Stderr.WriteString("Impossible to detect current user\n")
-		os.Exit(1)
+		utils.Logger.Fatal("Impossible to detect current user")
 	}
 	currentUser = fetchedCurrentUser
 }
@@ -194,7 +193,7 @@ func (e *Environment) getFilenames(directory string) ([]os.FileInfo, error) {
 		return nil, err
 	}
 
-	fileInfos := make([]os.FileInfo, 0, 16)
+	fileInfos := make([]os.FileInfo, 0, len(files))
 	for _, file := range files {
 		if file.IsDir() {
 			continue

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"io"
 	"os"
 	"regexp"
 	"strconv"
@@ -66,8 +64,7 @@ type executor func(map[string]interface{}, *environments.Environment)
 func main() {
 	defer func() {
 		if exc := recover(); exc != nil {
-			io.WriteString(os.Stderr, fmt.Sprint(exc))
-			os.Exit(1)
+			utils.Logger.Fatal(exc)
 		}
 	}()
 

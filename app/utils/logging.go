@@ -7,6 +7,7 @@ import (
 	logrus "github.com/Sirupsen/logrus"
 )
 
+// Logger is a global logging instance has to be used everywhere
 var Logger = logrus.New()
 
 type disabledFormatter struct{}
@@ -21,11 +22,13 @@ func (df disabledFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
+// EnableLogging enables verbose logging mode.
 func EnableLogging() {
 	Logger.Out = os.Stderr
 	Logger.Level = logrus.DebugLevel
 }
 
+// DisableLogging disables logging.
 func DisableLogging() {
 	Logger.Out = os.Stderr
 	Logger.Level = logrus.PanicLevel
