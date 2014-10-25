@@ -10,7 +10,7 @@ import (
 	"github.com/9seconds/ah/app/environments"
 )
 
-// GcType is the type of GC to execute
+// GcType is the type of GC to execute.
 type GcType uint8
 
 // Types of garbage collecting.
@@ -18,6 +18,15 @@ const (
 	GcAll GcType = iota
 	GcKeepLatest
 	GcOlderThan
+)
+
+// GcDir is the directory where GC has to be performed.
+type GcDir uint8
+
+// Directories for garbage collecting.
+const (
+	GcTracesDir GcDir = iota
+	GcBookmarksDir
 )
 
 const secondsInDay = 60 * 60 * 24
@@ -54,9 +63,17 @@ func (fis fileInfoSorter) Tail(first int) []os.FileInfo {
 }
 
 // GC implements g (garbage collecting) command.
-func GC(gcType GcType, param int, env *environments.Environment) {
+func GC(gcType GcType, gcDir GcDir, param int, env *environments.Environment) {
 	logger, _ := env.GetLogger()
-	fileInfos, err := env.GetTraceFilenames()
+
+	listFunction := env.GetTraceFilenames
+	fileNameFunction := env.GetTraceFileName
+	if gcDir == GcBookmarksDir {
+		listFunction = env.GetBookmarkFilenames
+		fileNameFunction = env.GetBookmarkFileName
+	}
+
+	fileInfos, err := listFunction()
 	if err != nil {
 		panic("Cannot fetch the list of trace filenames")
 	}
@@ -77,6 +94,6 @@ func GC(gcType GcType, param int, env *environments.Environment) {
 		logger.WithFields(logrus.Fields{
 			"filename": info.Name(),
 		}).Info("Remove file")
-		os.Remove(env.GetTraceFileName(info.Name()))
+		os.Remove(fileNameFunction(info.Name()))
 	}
 }

@@ -204,13 +204,21 @@ func (e *Environment) DisableDebugLog() {
 
 // GetTraceFilenames returns a list of filenames for traces.
 func (e *Environment) GetTraceFilenames() ([]os.FileInfo, error) {
-	fileInfos := make([]os.FileInfo, 0, 16)
+	return e.getFilenames(e.GetTracesDir())
+}
 
-	files, err := ioutil.ReadDir(e.GetTracesDir())
+// GetBookmarkFilenames returns a list of bookmarks for traces.
+func (e *Environment) GetBookmarkFilenames() ([]os.FileInfo, error) {
+	return e.getFilenames(e.GetBookmarksDir())
+}
+
+func (e *Environment) getFilenames(directory string) ([]os.FileInfo, error) {
+	files, err := ioutil.ReadDir(directory)
 	if err != nil {
-		return fileInfos, err
+		return nil, err
 	}
 
+	fileInfos := make([]os.FileInfo, 0, 16)
 	for _, file := range files {
 		if file.IsDir() {
 			continue

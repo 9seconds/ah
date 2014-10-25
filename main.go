@@ -40,7 +40,7 @@ Usage:
     ah [options] e <commandNumberOrBookMarkName>
     ah [options] t [-y] [--] <command>...
     ah [options] l <numberOfCommandYouWantToCheck>
-    ah [options] g [--keepLatest <keepLatest> | --olderThan <olderThan> | --all]
+    ah [options] (gt | gb) (--keepLatest <keepLatest> | --olderThan <olderThan> | --all)
     ah (-h | --help)
     ah --version
 
@@ -136,7 +136,7 @@ func main() {
 	} else if arguments["e"].(bool) {
 		logger.Info("Execute command 'execute'")
 		exec = executeExec
-	} else if arguments["g"].(bool) {
+	} else if arguments["gt"].(bool) || arguments["gb"].(bool) {
 		logger.Info("Execute command 'gc'")
 		exec = executeGC
 	} else {
@@ -249,6 +249,11 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 	var param int
 	var gcType commands.GcType
 
+	gcDir := commands.GcTracesDir
+	if arguments["gb"].(bool) {
+		gcDir = commands.GcBookmarksDir
+	}
+
 	if arguments["--keepLatest"].(bool) {
 		gcType = commands.GcKeepLatest
 		paramString := arguments["<keepLatest>"].(string)
@@ -269,7 +274,7 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 		gcType = commands.GcAll
 		param = 1
 	} else {
-		panic("Unknown command")
+		panic("Unknown subcommand command")
 	}
 
 	if param <= 0 {
@@ -281,5 +286,5 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 		"param":  param,
 	}).Info("Arguments")
 
-	commands.GC(gcType, param, env)
+	commands.GC(gcType, gcDir, param, env)
 }
