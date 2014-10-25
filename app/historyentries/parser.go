@@ -13,7 +13,7 @@ import (
 
 var (
 	bashTimestampRegexp = utils.CreateRegexp(`^#\s*\d+$`)
-	zshLineRegexp       = utils.CreateRegexp(`^: (\d+):\d;(.*)$`)
+	zshLineRegexp       = utils.CreateRegexp(`^: (\d+):\d;(.*?)$`)
 )
 
 type (

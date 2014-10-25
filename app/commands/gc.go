@@ -5,9 +5,8 @@ import (
 	"sort"
 	"time"
 
-	logrus "github.com/Sirupsen/logrus"
-
 	"github.com/9seconds/ah/app/environments"
+	"github.com/9seconds/ah/app/utils"
 )
 
 // GcType is the type of GC to execute.
@@ -91,9 +90,6 @@ func GC(gcType GcType, gcDir GcDir, param int, env *environments.Environment) {
 	}
 
 	for _, info := range fileInfos {
-		logger.WithFields(logrus.Fields{
-			"filename": info.Name(),
-		}).Info("Remove file")
-		os.Remove(fileNameFunction(info.Name()))
+		utils.RemoveWithLogging(logger, fileNameFunction(info.Name()))
 	}
 }

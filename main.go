@@ -58,7 +58,7 @@ Options:
 
 const version = "ah 0.6"
 
-var validateBookmarkName = utils.CreateRegexp(`^\w(\w|\d)*$`)
+var validateBookmarkName = utils.CreateRegexp(`^[A-Za-z_]\w*$`)
 
 type executor func(map[string]interface{}, *environments.Environment)
 

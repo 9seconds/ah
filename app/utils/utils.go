@@ -6,6 +6,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	logrus "github.com/Sirupsen/logrus"
 )
 
 // SplitCommandToChunks splits a command to the command name and
@@ -66,4 +68,22 @@ func GetStatusCode(err *exec.ExitError) int {
 		panic("It seems you have an unsupported OS")
 	}
 	return waitStatus.ExitStatus()
+}
+
+// RemoveWithLogging does the same as os.Remove does but logs.
+func RemoveWithLogging(logger *logrus.Logger, fileName string) error {
+	err := os.Remove(fileName)
+
+	if err == nil {
+		logger.WithFields(logrus.Fields{
+			"filename": fileName,
+		}).Info("File was deleted")
+	} else {
+		logger.WithFields(logrus.Fields{
+			"filename": fileName,
+			"error":    err,
+		}).Warn("File was not deleted")
+	}
+
+	return nil
 }
