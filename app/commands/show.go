@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/9seconds/ah/app/environments"
 	"github.com/9seconds/ah/app/historyentries"
@@ -14,7 +14,8 @@ func Show(slice *slices.Slice, filter *utils.Regexp, env *environments.Environme
 	var commands []historyentries.HistoryEntry
 
 	if slice.Start >= 0 && slice.Finish >= 0 {
-		keeper, err := historyentries.GetCommands(historyentries.GetCommandsRange, filter, env, slice.Start, slice.Finish)
+		keeper, err := historyentries.GetCommands(historyentries.GetCommandsRange,
+			filter, env, slice.Start, slice.Finish)
 		if err != nil {
 			return
 		}
@@ -34,6 +35,7 @@ func Show(slice *slices.Slice, filter *utils.Regexp, env *environments.Environme
 	}
 
 	for idx := 0; idx < len(commands); idx++ {
-		fmt.Println(commands[idx].ToString(env))
+		os.Stdout.WriteString(commands[idx].ToString(env))
+		os.Stdout.WriteString("\n")
 	}
 }

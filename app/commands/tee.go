@@ -17,8 +17,8 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	if err != nil {
 		panic("Cannot create temporary file")
 	}
-	bufferedOutput := gzip.NewWriter(output)
 
+	bufferedOutput := gzip.NewWriter(output)
 	combinedStdout := io.MultiWriter(os.Stdout, bufferedOutput)
 	combinedStderr := io.MultiWriter(os.Stderr, bufferedOutput)
 
