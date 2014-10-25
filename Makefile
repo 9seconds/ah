@@ -54,7 +54,7 @@ restore: godep
 prog-build: restore prog-clean
 	go build -o $(BUILD_PROG) $(GOLANG_AH)
 
-install: restore prog-clean
+install: restore
 	go install $(GOLANG_AH)
 
 prog-clean:
