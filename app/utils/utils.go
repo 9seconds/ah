@@ -36,27 +36,6 @@ func Open(filename string) *os.File {
 	return handler
 }
 
-// Exec executes a command with arguments. Also it attaches ah incoming signal pipeline
-// to external process for a great good.
-// Return nil if ok. If not ok, returns exec.ExitError
-func Exec(cmd string, args ...string) *exec.ExitError {
-	command := exec.Command(cmd, args...)
-	command.Stdout = os.Stdout
-	command.Stderr = os.Stderr
-	command.Stdin = os.Stdin
-	AttachSignalsToProcess(command)
-
-	err := command.Run()
-	if err == nil {
-		return nil
-	}
-
-	if exitError, ok := err.(*exec.ExitError); ok {
-		return exitError
-	}
-	panic(err.Error())
-}
-
 // GetStatusCode returns an exit code from exec.ExitError
 func GetStatusCode(err *exec.ExitError) int {
 	if err == nil {

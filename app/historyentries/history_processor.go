@@ -27,17 +27,12 @@ func processHistories(env *environments.Environment) (chan bool, chan *HistoryEn
 			entries[file.Name()] = true
 		}
 
-		for {
-			entry, ok := <-consumeChan
-			if ok {
-				if _, found := entries[entry.GetTraceName()]; found {
-					entry.hasHistory = true
-				}
-			} else {
-				resultChan <- true
-				break
+		for entry := range consumeChan {
+			if _, found := entries[entry.GetTraceName()]; found {
+				entry.hasHistory = true
 			}
 		}
+		resultChan <- true
 	}()
 
 	return resultChan, consumeChan

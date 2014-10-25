@@ -37,8 +37,10 @@ func ExecuteBookmark(name string, env *environments.Environment) {
 
 func execute(command string) {
 	cmd, args := utils.SplitCommandToChunks(command)
-	executeError := utils.Exec(cmd, args...)
 
+	executeError := utils.Exec(false,
+		os.Stdin, os.Stdout, os.Stderr,
+		cmd, args...)
 	if executeError != nil {
 		os.Exit(utils.GetStatusCode(executeError))
 	}
