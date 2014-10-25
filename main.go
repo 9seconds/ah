@@ -41,6 +41,7 @@ Usage:
     ah [options] t [-y] [--] <command>...
     ah [options] l <numberOfCommandYouWantToCheck>
     ah [options] lb
+    ah [options] rb <bookmarkToRemove>...
     ah [options] (gt | gb) (--keepLatest <keepLatest> | --olderThan <olderThan> | --all)
     ah (-h | --help)
     ah --version
@@ -143,6 +144,9 @@ func main() {
 	} else if arguments["lb"].(bool) {
 		logger.Info("Execute command 'listBookmarks'")
 		exec = executeListBookmarks
+	} else if arguments["rb"].(bool) {
+		logger.Info("Execute command 'removeBookmarks'")
+		exec = executeRemoveBookmarks
 	} else {
 		logger.Info("No valid choices", arguments)
 		panic("Unknown command. Please be more precise")
@@ -295,4 +299,27 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 
 func executeListBookmarks(_ map[string]interface{}, env *environments.Environment) {
 	commands.ListBookmarks(env)
+}
+
+func executeRemoveBookmarks(arguments map[string]interface{}, env *environments.Environment) {
+	logger, _ := env.GetLogger()
+
+	fmt.Println(arguments["<bookmarkToRemove>"])
+
+	bookmarks, ok := arguments["<bookmarkToRemove>"].([]string)
+	if !ok || bookmarks == nil || len(bookmarks) == 0 {
+		logger.Info("Nothing to do here")
+		return
+	}
+
+	for _, bookmark := range bookmarks {
+		if !validateBookmarkName.Match(bookmark) {
+			logger.WithFields(logrus.Fields{
+				"bookmark": bookmark,
+			}).Warn("Bookmark name is invalid")
+			panic(fmt.Sprintf("Bookmark %s is invalid", bookmark))
+		}
+	}
+
+	commands.RemoveBookmarks(bookmarks, env)
 }
