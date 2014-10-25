@@ -10,7 +10,7 @@ import (
 )
 
 // ExecuteCommandNumber executes command by its number in history file.
-func ExecuteCommandNumber(number int, env *environments.Environment) {
+func ExecuteCommandNumber(pseudoTTY bool, number int, env *environments.Environment) {
 	if number < 0 {
 		panic("Cannot find such command")
 	}
@@ -22,23 +22,23 @@ func ExecuteCommandNumber(number int, env *environments.Environment) {
 	command, _ := commands.Result().(historyentries.HistoryEntry)
 	cmd, _ := command.GetCommand()
 
-	execute(cmd)
+	execute(pseudoTTY, cmd)
 }
 
 // ExecuteBookmark executes command by its bookmark name.
-func ExecuteBookmark(name string, env *environments.Environment) {
+func ExecuteBookmark(pseudoTTY bool, name string, env *environments.Environment) {
 	content, err := ioutil.ReadFile(env.GetBookmarkFileName(name))
 	if err != nil {
 		panic("Unknown bookmark")
 	}
 
-	execute(string(content))
+	execute(pseudoTTY, string(content))
 }
 
-func execute(command string) {
+func execute(pseudoTTY bool, command string) {
 	cmd, args := utils.SplitCommandToChunks(command)
 
-	executeError := utils.Exec(false,
+	executeError := utils.Exec(pseudoTTY,
 		os.Stdin, os.Stdout, os.Stderr,
 		cmd, args...)
 	if executeError != nil {

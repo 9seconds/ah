@@ -37,7 +37,7 @@ you want.
 Usage:
     ah [options] s [-z] [-g PATTERN] [<lastNcommands> | <startFromNCommand> <finishByMCommand>]
     ah [options] b <commandNumber> <bookmarkAs>
-    ah [options] e <commandNumberOrBookMarkName>
+    ah [options] e [-y] <commandNumberOrBookMarkName>
     ah [options] t [-y] [--] <command>...
     ah [options] l <numberOfCommandYouWantToCheck>
     ah [options] lb
@@ -234,18 +234,20 @@ func executeBookmark(arguments map[string]interface{}, env *environments.Environ
 
 func executeExec(arguments map[string]interface{}, env *environments.Environment) {
 	commandNumberOrBookMarkName := arguments["<commandNumberOrBookMarkName>"].(string)
+	tty := arguments["--tty"].(bool)
 
 	logger, _ := env.GetLogger()
 	logger.WithFields(logrus.Fields{
 		"commandNumberOrBookMarkName": commandNumberOrBookMarkName,
+		"tty": tty,
 	}).Info("Arguments of 'bookmark'")
 
 	if commandNumber, err := strconv.Atoi(commandNumberOrBookMarkName); err == nil {
 		logger.Info("Execute command number ", commandNumber)
-		commands.ExecuteCommandNumber(commandNumber, env)
+		commands.ExecuteCommandNumber(tty, commandNumber, env)
 	} else if validateBookmarkName.Match(commandNumberOrBookMarkName) {
 		logger.Info("Execute bookmark ", commandNumberOrBookMarkName)
-		commands.ExecuteBookmark(commandNumberOrBookMarkName, env)
+		commands.ExecuteBookmark(tty, commandNumberOrBookMarkName, env)
 	} else {
 		panic("Incorrect bookmark name! It should be started with alphabet letter, and alphabet or digits after!")
 	}
