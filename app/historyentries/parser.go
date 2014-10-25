@@ -25,7 +25,7 @@ type (
 )
 
 func getParser(env *environments.Environment) Parser {
-	shell, _ := env.GetShell()
+	shell := env.GetShell()
 
 	shellSpecific := parseBash
 	if shell == environments.ShellZsh {
@@ -136,7 +136,7 @@ func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *Hist
 	currentEvent.number = currentNumber
 	currentEvent.timestamp = converted
 
-	continueToConsume = strings.HasSuffix(text, "\\")
+	continueToConsume = strings.HasSuffix(text, `\`)
 	if !continueToConsume {
 		utils.Logger.WithFields(logrus.Fields{
 			"event": currentEvent,

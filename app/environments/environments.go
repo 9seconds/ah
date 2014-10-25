@@ -74,22 +74,18 @@ func (e *Environment) GetBookmarkFileName(name string) string {
 }
 
 // DiscoverAppDir tries to discover app storage directory from the environment itself.
-func (e *Environment) DiscoverAppDir() error {
-	return e.SetAppDir(filepath.Join(currentUser.HomeDir, defaultAppDir))
+func (e *Environment) DiscoverAppDir() {
+	e.SetAppDir(filepath.Join(currentUser.HomeDir, defaultAppDir))
 }
 
 // GetAppDir returns an absolute path of the app storage directory and error if occured.
-func (e *Environment) GetAppDir() (string, error) {
-	if e.appDir == "" {
-		return "", errors.New("AppDir is not set yet")
-	}
-	return e.appDir, nil
+func (e *Environment) GetAppDir() string {
+	return e.appDir
 }
 
 // SetAppDir sets an app storage directory. Has to be an absolute path.
-func (e *Environment) SetAppDir(path string) error {
+func (e *Environment) SetAppDir(path string) {
 	e.appDir = path
-	return nil
 }
 
 // DiscoverShell discovers shell from the actual environment.
@@ -98,11 +94,8 @@ func (e *Environment) DiscoverShell() error {
 }
 
 // GetShell returns a shell code from the actual envrionment.
-func (e *Environment) GetShell() (string, error) {
-	if e.shell == "" {
-		return "", errors.New("Shell is not set yet")
-	}
-	return e.shell, nil
+func (e *Environment) GetShell() string {
+	return e.shell
 }
 
 // SetShell explicitly sets shell.
@@ -117,50 +110,36 @@ func (e *Environment) SetShell(shell string) error {
 }
 
 // DiscoverHistFile tries to discover history file from the actual environment.
-func (e *Environment) DiscoverHistFile() error {
-	shell, err := e.GetShell()
-	if err != nil {
-		return err
+func (e *Environment) DiscoverHistFile() {
+	e.histFile = filepath.Join(currentUser.HomeDir, defaultBashHistFile)
+	if e.shell == ShellZsh {
+		e.histFile = filepath.Join(currentUser.HomeDir, defaultZshHistFile)
 	}
-
-	if shell == ShellZsh {
-		return e.SetHistFile(filepath.Join(currentUser.HomeDir, defaultZshHistFile))
-	}
-	return e.SetHistFile(filepath.Join(currentUser.HomeDir, defaultBashHistFile))
 }
 
 // GetHistFile returns an absolute path of the history file from the actual environment.
-func (e *Environment) GetHistFile() (string, error) {
-	if e.histFile == "" {
-		return "", errors.New("HistFile is not set yet")
-	}
-	return e.histFile, nil
+func (e *Environment) GetHistFile() string {
+	return e.histFile
 }
 
 // SetHistFile sets a path to the history file.
-func (e *Environment) SetHistFile(path string) error {
+func (e *Environment) SetHistFile(path string) {
 	e.histFile = path
-	return nil
 }
 
 // DiscoverHistTimeFormat discovers time format of the history entries from the environment.
-func (e *Environment) DiscoverHistTimeFormat() error {
+func (e *Environment) DiscoverHistTimeFormat() {
 	e.histTimeFormat = os.Getenv("HISTTIMEFORMAT")
-	return nil
 }
 
 // GetHistTimeFormat returns a history time format.
-func (e *Environment) GetHistTimeFormat() (string, error) {
-	if e.histTimeFormat == "" {
-		return "", errors.New("HistTimeFormat is not set yet")
-	}
-	return e.histTimeFormat, nil
+func (e *Environment) GetHistTimeFormat() string {
+	return e.histTimeFormat
 }
 
 // SetHistTimeFormat sets a history time format.
-func (e *Environment) SetHistTimeFormat(histTimeFormat string) error {
+func (e *Environment) SetHistTimeFormat(histTimeFormat string) {
 	e.histTimeFormat = histTimeFormat
-	return nil
 }
 
 // FormatTimeStamp formats a timestamp according to the environment settings.
@@ -170,11 +149,10 @@ func (e *Environment) FormatTimeStamp(timestamp int) (string, error) {
 
 // FormatTime formats a time structure according to the environment settings.
 func (e *Environment) FormatTime(timestamp *time.Time) (string, error) {
-	format, err := e.GetHistTimeFormat()
-	if err != nil {
-		return "", err
+	if e.histTimeFormat == "" {
+		return "", errors.New("Cannot format time for absent time format")
 	}
-	return strftime.Strftime(timestamp, format), nil
+	return strftime.Strftime(timestamp, e.histTimeFormat), nil
 }
 
 // GetTraceFilenames returns a list of filenames for traces.

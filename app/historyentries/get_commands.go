@@ -31,8 +31,7 @@ func GetCommands(mode GetCommandsMode, filter *utils.Regexp, env *environments.E
 	keeper := getKeeper(mode, varargs...)
 	parser := getParser(env)
 
-	histFile, _ := env.GetHistFile()
-	file := utils.Open(histFile)
+	file := utils.Open(env.GetHistFile())
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 
