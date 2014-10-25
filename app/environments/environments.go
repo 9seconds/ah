@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"time"
 
-	logrus "github.com/Sirupsen/logrus"
 	strftime "github.com/weidewang/go-strftime"
 
 	"github.com/9seconds/ah/app/utils"
@@ -48,12 +47,11 @@ type Environment struct {
 	histFile       string
 	histTimeFormat string
 	shell          string
-	log            *logrus.Logger
 }
 
 // OK checks if all required information was collected.
 func (e *Environment) OK() bool {
-	return e.log != nil && e.appDir != "" && e.histFile != "" && e.shell != ""
+	return e.appDir != "" && e.histFile != "" && e.shell != ""
 }
 
 // GetTracesDir returns an absolute path for the directory where traces should be stored.
@@ -178,28 +176,6 @@ func (e *Environment) FormatTime(timestamp *time.Time) (string, error) {
 		return "", err
 	}
 	return strftime.Strftime(timestamp, format), nil
-}
-
-// GetLogger returns a preconfigured logger.
-func (e *Environment) GetLogger() (*logrus.Logger, error) {
-	if e.log == nil {
-		return nil, errors.New("Logger is not set yet")
-	}
-	return e.log, nil
-}
-
-// EnableDebugLog makes logging verbose.
-func (e *Environment) EnableDebugLog() {
-	e.log = logrus.New()
-	e.log.Out = os.Stderr
-	e.log.Level = logrus.DebugLevel
-}
-
-// DisableDebugLog makes logging silent.
-func (e *Environment) DisableDebugLog() {
-	e.log = logrus.New()
-	e.log.Out = ioutil.Discard
-	e.log.Level = logrus.ErrorLevel
 }
 
 // GetTraceFilenames returns a list of filenames for traces.

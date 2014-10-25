@@ -3,7 +3,6 @@ package commands
 import (
 	"bufio"
 	"compress/gzip"
-	"fmt"
 	"os"
 	"strconv"
 
@@ -16,25 +15,25 @@ import (
 func ListTrace(argument string, env *environments.Environment) {
 	number, err := strconv.Atoi(argument)
 	if err != nil || number < 0 {
-		panic(fmt.Sprintf("Cannot convert argument to a command number: %s", argument))
+		utils.Logger.Panicf("Cannot convert argument to a command number: %s", argument)
 	}
 
 	commands, err := historyentries.GetCommands(historyentries.GetCommandsPrecise, nil, env, number)
 	if err != nil {
-		panic(err)
+		utils.Logger.Panic(err)
 	}
 	command, _ := commands.Result().(historyentries.HistoryEntry)
 	hashFilename := command.GetTraceName()
 	filename := env.GetTraceFileName(hashFilename)
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		panic(fmt.Sprintf("Output for %s is not exist", argument))
+		utils.Logger.Panicf("Output for %s is not exist", argument)
 	}
 
 	file := utils.Open(filename)
 	defer file.Close()
 	ungzippedFile, err := gzip.NewReader(file)
 	if err != nil {
-		panic(err)
+		utils.Logger.Panic(err)
 	}
 
 	scanner := bufio.NewScanner(ungzippedFile)
@@ -44,6 +43,6 @@ func ListTrace(argument string, env *environments.Environment) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		panic(err)
+		utils.Logger.Panic(err)
 	}
 }

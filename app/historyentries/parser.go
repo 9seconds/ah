@@ -21,12 +21,11 @@ type (
 	Parser func(Keeper, *bufio.Scanner, *utils.Regexp, chan *HistoryEntry) (Keeper, error)
 
 	// ShellSpecificParser is a signature for a function which implements shell specific logic for parsing.
-	ShellSpecificParser func(Keeper, string, uint, *HistoryEntry, *utils.Regexp, chan *HistoryEntry, *logrus.Logger) (bool, uint, *HistoryEntry)
+	ShellSpecificParser func(Keeper, string, uint, *HistoryEntry, *utils.Regexp, chan *HistoryEntry) (bool, uint, *HistoryEntry)
 )
 
 func getParser(env *environments.Environment) Parser {
 	shell, _ := env.GetShell()
-	logger, _ := env.GetLogger()
 
 	shellSpecific := parseBash
 	if shell == environments.ShellZsh {
@@ -43,21 +42,21 @@ func getParser(env *environments.Environment) Parser {
 		for scanner.Scan() && keeper.Continue() {
 			text := scanner.Text()
 
-			logger.WithFields(logrus.Fields{
+			utils.Logger.WithFields(logrus.Fields{
 				"text":              text,
 				"continueToConsume": continueToConsume,
 				"currentEvent":      currentEvent,
 			}).Info("Parse history line")
 
 			if continueToConsume {
-				logger.Info("Attach the line to the previous command")
+				utils.Logger.Info("Attach the line to the previous command")
 
 				currentEvent.command += "\n" + text
 				if strings.HasSuffix(text, `\`) {
 					continue
 				}
 				continueToConsume = false
-				logger.WithFields(logrus.Fields{
+				utils.Logger.WithFields(logrus.Fields{
 					"event": currentEvent,
 				}).Info("Commit event")
 				currentEvent = keeper.Commit(currentEvent, historyChan)
@@ -69,8 +68,7 @@ func getParser(env *environments.Environment) Parser {
 				currentNumber,
 				currentEvent,
 				filter,
-				historyChan,
-				logger)
+				historyChan)
 		}
 
 		if err := scanner.Err(); err != nil {
@@ -80,16 +78,16 @@ func getParser(env *environments.Environment) Parser {
 	}
 }
 
-func parseBash(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp, historyChan chan *HistoryEntry, logger *logrus.Logger) (bool, uint, *HistoryEntry) {
+func parseBash(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp, historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
 	continueToConsume := false
 	if bashTimestampRegexp.Match(text) {
 		if converted, err := strconv.Atoi(text[1:]); err == nil {
-			logger.WithFields(logrus.Fields{
+			utils.Logger.WithFields(logrus.Fields{
 				"timestamp": converted,
 			}).Info("Parse timestamp")
 			currentEvent.timestamp = converted
 		} else {
-			logger.WithFields(logrus.Fields{
+			utils.Logger.WithFields(logrus.Fields{
 				"text":  text,
 				"error": err,
 			}).Warn("Cannot parse timestamp")
@@ -101,13 +99,13 @@ func parseBash(keeper Keeper, text string, currentNumber uint, currentEvent *His
 
 			continueToConsume = strings.HasSuffix(text, "\\")
 			if !continueToConsume {
-				logger.WithFields(logrus.Fields{
+				utils.Logger.WithFields(logrus.Fields{
 					"event": currentEvent,
 				}).Info("Commit event")
 				currentEvent = keeper.Commit(currentEvent, historyChan)
 			}
 		} else {
-			logger.Info("Skip text line because of the filter.")
+			utils.Logger.Info("Skip text line because of the filter.")
 		}
 		currentNumber++
 	}
@@ -115,12 +113,12 @@ func parseBash(keeper Keeper, text string, currentNumber uint, currentEvent *His
 	return continueToConsume, currentNumber, currentEvent
 }
 
-func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp, historyChan chan *HistoryEntry, logger *logrus.Logger) (bool, uint, *HistoryEntry) {
+func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp, historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
 	continueToConsume := false
 	groups, err := zshLineRegexp.Groups(text)
 
 	if err != nil {
-		logger.WithFields(logrus.Fields{
+		utils.Logger.WithFields(logrus.Fields{
 			"error": err,
 		}).Warn("Cannot parse current line, skip.")
 		return continueToConsume, currentNumber, currentEvent
@@ -129,7 +127,7 @@ func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *Hist
 	currentNumber++
 
 	if filter != nil && !filter.Match(command) {
-		logger.Info("Skip text line because of the filter.")
+		utils.Logger.Info("Skip text line because of the filter.")
 		return continueToConsume, currentNumber, currentEvent
 	}
 
@@ -140,7 +138,7 @@ func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *Hist
 
 	continueToConsume = strings.HasSuffix(text, "\\")
 	if !continueToConsume {
-		logger.WithFields(logrus.Fields{
+		utils.Logger.WithFields(logrus.Fields{
 			"event": currentEvent,
 		}).Info("Commit event")
 		currentEvent = keeper.Commit(currentEvent, historyChan)

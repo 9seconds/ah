@@ -24,7 +24,7 @@ func Exec(pseudoTTY bool, stdin io.Reader, stdout io.Writer, stderr io.Writer, c
 	if pseudoTTY {
 		pseudoStdin, pseudoStdout, pseudoStderr, pseudoPTYError := runPTYCommand(command)
 		if pseudoPTYError != nil {
-			panic(pseudoPTYError)
+			Logger.Panic(pseudoPTYError)
 		}
 		go io.Copy(pseudoStdin, stdin)
 		go io.Copy(stdout, pseudoStdout)
@@ -34,7 +34,7 @@ func Exec(pseudoTTY bool, stdin io.Reader, stdout io.Writer, stderr io.Writer, c
 		command.Stdout = stdout
 		command.Stderr = stderr
 		if startError := command.Start(); startError != nil {
-			panic(startError)
+			Logger.Panic(startError)
 		}
 	}
 
@@ -44,7 +44,9 @@ func Exec(pseudoTTY bool, stdin io.Reader, stdout io.Writer, stderr io.Writer, c
 	} else if convertedError, ok := err.(*exec.ExitError); ok {
 		return convertedError
 	}
-	panic(err.Error())
+	Logger.Panic(err.Error())
+
+	return nil // dammit, go!!!
 }
 
 func runPTYCommand(cmd *exec.Cmd) (*os.File, *os.File, *os.File, error) {
@@ -84,7 +86,7 @@ func runPTYCommand(cmd *exec.Cmd) (*os.File, *os.File, *os.File, error) {
 
 func attachSignalsToProcess(command *exec.Cmd) {
 	if currentCommand != nil {
-		panic("Command already executing")
+		Logger.Panic("Command already executing")
 	}
 	commandLock.Lock()
 	defer commandLock.Unlock()

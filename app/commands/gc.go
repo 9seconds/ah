@@ -63,8 +63,6 @@ func (fis fileInfoSorter) Tail(first int) []os.FileInfo {
 
 // GC implements g (garbage collecting) command.
 func GC(gcType GcType, gcDir GcDir, param int, env *environments.Environment) {
-	logger, _ := env.GetLogger()
-
 	listFunction := env.GetTraceFilenames
 	fileNameFunction := env.GetTraceFileName
 	if gcDir == GcBookmarksDir {
@@ -74,7 +72,7 @@ func GC(gcType GcType, gcDir GcDir, param int, env *environments.Environment) {
 
 	fileInfos, err := listFunction()
 	if err != nil {
-		panic("Cannot fetch the list of trace filenames")
+		utils.Logger.Panic("Cannot fetch the list of trace filenames")
 	}
 	infoSorter := fileInfoSorter{content: fileInfos}
 	sort.Sort(infoSorter)
@@ -90,6 +88,6 @@ func GC(gcType GcType, gcDir GcDir, param int, env *environments.Environment) {
 	}
 
 	for _, info := range fileInfos {
-		utils.RemoveWithLogging(logger, fileNameFunction(info.Name()))
+		utils.RemoveWithLogging(fileNameFunction(info.Name()))
 	}
 }

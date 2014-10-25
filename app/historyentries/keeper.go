@@ -3,6 +3,8 @@ package historyentries
 import (
 	"os"
 	"strconv"
+
+	"github.com/9seconds/ah/app/utils"
 )
 
 var historyEventsCapacity = 5000
@@ -142,5 +144,7 @@ func getKeeper(mode GetCommandsMode, varargs ...int) Keeper {
 		keeper.SetNumber(varargs[0])
 		return keeper
 	}
-	panic("Unknown GetCommandsMode")
+
+	utils.Logger.Panic("Unknown GetCommandsMode")
+	return new(allKeeper) // dammit go!
 }

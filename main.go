@@ -5,6 +5,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"io"
 
 	logrus "github.com/Sirupsen/logrus"
 	docopt "github.com/docopt/docopt-go"
@@ -65,7 +66,7 @@ type executor func(map[string]interface{}, *environments.Environment)
 func main() {
 	defer func() {
 		if exc := recover(); exc != nil {
-			os.Stderr.WriteString(fmt.Sprintf("%v\n", exc))
+			io.WriteString(os.Stderr, fmt.Sprint(exc))
 			os.Exit(1)
 		}
 	}()
@@ -75,8 +76,13 @@ func main() {
 		panic(err)
 	}
 
-	env := new(environments.Environment)
+	if arguments["--debug"].(bool) {
+		utils.EnableLogging()
+	} else {
+		utils.DisableLogging()
+	}
 
+	env := new(environments.Environment)
 	argShell := arguments["--shell"]
 	if argShell == nil {
 		env.DiscoverShell()
@@ -105,51 +111,45 @@ func main() {
 		env.SetAppDir(argAppDir.(string))
 	}
 
-	if arguments["--debug"].(bool) {
-		env.EnableDebugLog()
-	} else {
-		env.DisableDebugLog()
-	}
+	utils.Logger.WithFields(logrus.Fields{
+		"arguments": arguments,
+		"environment": env,
+}).Debug("Ready to start")
 
-	logger, _ := env.GetLogger()
-	logger.WithFields(arguments).Debug("Arguments")
-	logger.Debug("Environment ", env)
-
-	logger.WithFields(logrus.Fields{
+	utils.Logger.WithFields(logrus.Fields{
 		"error": os.MkdirAll(env.GetTracesDir(), 0777),
 	}).Info("Create traces dir")
-	logger.WithFields(logrus.Fields{
+	utils.Logger.WithFields(logrus.Fields{
 		"error": os.MkdirAll(env.GetBookmarksDir(), 0777),
 	}).Info("Create bookmarks dir")
 
 	var exec executor
 	if arguments["t"].(bool) {
-		logger.Info("Execute command 'tee'")
+		utils.Logger.Info("Execute command 'tee'")
 		exec = executeTee
 	} else if arguments["s"].(bool) {
-		logger.Info("Execute command 'show'")
+		utils.Logger.Info("Execute command 'show'")
 		exec = executeShow
 	} else if arguments["l"].(bool) {
-		logger.Info("Execute command 'listTrace'")
+		utils.Logger.Info("Execute command 'listTrace'")
 		exec = executeListTrace
 	} else if arguments["b"].(bool) {
-		logger.Info("Execute command 'bookmark'")
+		utils.Logger.Info("Execute command 'bookmark'")
 		exec = executeBookmark
 	} else if arguments["e"].(bool) {
-		logger.Info("Execute command 'execute'")
+		utils.Logger.Info("Execute command 'execute'")
 		exec = executeExec
 	} else if arguments["gt"].(bool) || arguments["gb"].(bool) {
-		logger.Info("Execute command 'gc'")
+		utils.Logger.Info("Execute command 'gc'")
 		exec = executeGC
 	} else if arguments["lb"].(bool) {
-		logger.Info("Execute command 'listBookmarks'")
+		utils.Logger.Info("Execute command 'listBookmarks'")
 		exec = executeListBookmarks
 	} else if arguments["rb"].(bool) {
-		logger.Info("Execute command 'removeBookmarks'")
+		utils.Logger.Info("Execute command 'removeBookmarks'")
 		exec = executeRemoveBookmarks
 	} else {
-		logger.Info("No valid choices", arguments)
-		panic("Unknown command. Please be more precise")
+		utils.Logger.Panic("Unknown command. Please be more precise")
 	}
 	exec(arguments, env)
 }
@@ -158,8 +158,7 @@ func executeTee(arguments map[string]interface{}, env *environments.Environment)
 	cmds := arguments["<command>"].([]string)
 	tty := arguments["--tty"].(bool)
 
-	logger, _ := env.GetLogger()
-	logger.WithFields(logrus.Fields{
+	utils.Logger.WithFields(logrus.Fields{
 		"command arguments": cmds,
 		"pseudo-tty":        tty,
 	}).Info("Arguments of 'tee'")
@@ -168,14 +167,12 @@ func executeTee(arguments map[string]interface{}, env *environments.Environment)
 }
 
 func executeShow(arguments map[string]interface{}, env *environments.Environment) {
-	logger, _ := env.GetLogger()
-
 	slice, err := slices.ExtractSlice(
 		arguments["<lastNcommands>"],
 		arguments["<startFromNCommand>"],
 		arguments["<finishByMCommand>"])
 	if err != nil {
-		panic(err)
+		utils.Logger.Panic(err)
 	}
 
 	var filter *utils.Regexp
@@ -191,7 +188,7 @@ func executeShow(arguments map[string]interface{}, env *environments.Environment
 		filter = utils.CreateRegexp(query)
 	}
 
-	logger.WithFields(logrus.Fields{
+	utils.Logger.WithFields(logrus.Fields{
 		"slice":  slice,
 		"filter": filter,
 	}).Info("Arguments of 'show'")
@@ -202,8 +199,7 @@ func executeShow(arguments map[string]interface{}, env *environments.Environment
 func executeListTrace(arguments map[string]interface{}, env *environments.Environment) {
 	cmd := arguments["<numberOfCommandYouWantToCheck>"].(string)
 
-	logger, _ := env.GetLogger()
-	logger.WithFields(logrus.Fields{
+	utils.Logger.WithFields(logrus.Fields{
 		"cmd": cmd,
 	}).Info("Arguments of 'listTrace'")
 
@@ -213,18 +209,17 @@ func executeListTrace(arguments map[string]interface{}, env *environments.Enviro
 func executeBookmark(arguments map[string]interface{}, env *environments.Environment) {
 	var commandNumber int
 	if number, err := strconv.Atoi(arguments["<commandNumber>"].(string)); err != nil {
-		panic(fmt.Sprintf("Cannot understand command number: %d", commandNumber))
+		utils.Logger.Panicf("Cannot understand command number: %d", commandNumber)
 	} else {
 		commandNumber = number
 	}
 
 	bookmarkAs := arguments["<bookmarkAs>"].(string)
 	if !validateBookmarkName.Match(bookmarkAs) {
-		panic("Incorrect bookmark name!")
+		utils.Logger.Panic("Incorrect bookmark name!")
 	}
 
-	logger, _ := env.GetLogger()
-	logger.WithFields(logrus.Fields{
+	utils.Logger.WithFields(logrus.Fields{
 		"commandNumber": commandNumber,
 		"bookmarkAs":    bookmarkAs,
 	}).Info("Arguments of 'bookmark'")
@@ -236,26 +231,23 @@ func executeExec(arguments map[string]interface{}, env *environments.Environment
 	commandNumberOrBookMarkName := arguments["<commandNumberOrBookMarkName>"].(string)
 	tty := arguments["--tty"].(bool)
 
-	logger, _ := env.GetLogger()
-	logger.WithFields(logrus.Fields{
+	utils.Logger.WithFields(logrus.Fields{
 		"commandNumberOrBookMarkName": commandNumberOrBookMarkName,
 		"tty": tty,
 	}).Info("Arguments of 'bookmark'")
 
 	if commandNumber, err := strconv.Atoi(commandNumberOrBookMarkName); err == nil {
-		logger.Info("Execute command number ", commandNumber)
+		utils.Logger.Info("Execute command number ", commandNumber)
 		commands.ExecuteCommandNumber(tty, commandNumber, env)
 	} else if validateBookmarkName.Match(commandNumberOrBookMarkName) {
-		logger.Info("Execute bookmark ", commandNumberOrBookMarkName)
+		utils.Logger.Info("Execute bookmark ", commandNumberOrBookMarkName)
 		commands.ExecuteBookmark(tty, commandNumberOrBookMarkName, env)
 	} else {
-		panic("Incorrect bookmark name! It should be started with alphabet letter, and alphabet or digits after!")
+		utils.Logger.Panic("Incorrect bookmark name! It should be started with alphabet letter, and alphabet or digits after!")
 	}
 }
 
 func executeGC(arguments map[string]interface{}, env *environments.Environment) {
-	logger, _ := env.GetLogger()
-
 	var param int
 	var gcType commands.GcType
 
@@ -269,7 +261,7 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 		paramString := arguments["<keepLatest>"].(string)
 		paramConverted, err := strconv.Atoi(paramString)
 		if err != nil {
-			panic(err)
+			utils.Logger.Panic(err)
 		}
 		param = paramConverted
 	} else if arguments["--olderThan"].(bool) {
@@ -277,21 +269,21 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 		paramString := arguments["<olderThan>"].(string)
 		paramConverted, err := strconv.Atoi(paramString)
 		if err != nil {
-			panic(err)
+			utils.Logger.Panic(err)
 		}
 		param = paramConverted
 	} else if arguments["--all"].(bool) {
 		gcType = commands.GcAll
 		param = 1
 	} else {
-		panic("Unknown subcommand command")
+		utils.Logger.Panic("Unknown subcommand command")
 	}
 
 	if param <= 0 {
-		panic("Parameter of garbage collection has to be > 0")
+		utils.Logger.Panic("Parameter of garbage collection has to be > 0")
 	}
 
-	logger.WithFields(logrus.Fields{
+	utils.Logger.WithFields(logrus.Fields{
 		"gcType": gcType,
 		"param":  param,
 	}).Info("Arguments")
@@ -304,20 +296,17 @@ func executeListBookmarks(_ map[string]interface{}, env *environments.Environmen
 }
 
 func executeRemoveBookmarks(arguments map[string]interface{}, env *environments.Environment) {
-	logger, _ := env.GetLogger()
-
 	bookmarks, ok := arguments["<bookmarkToRemove>"].([]string)
 	if !ok || bookmarks == nil || len(bookmarks) == 0 {
-		logger.Info("Nothing to do here")
+		utils.Logger.Info("Nothing to do here")
 		return
 	}
 
 	for _, bookmark := range bookmarks {
 		if !validateBookmarkName.Match(bookmark) {
-			logger.WithFields(logrus.Fields{
+			utils.Logger.WithFields(logrus.Fields{
 				"bookmark": bookmark,
-			}).Warn("Bookmark name is invalid")
-			panic(fmt.Sprintf("Bookmark %s is invalid", bookmark))
+			}).Panicf("Bookmark name %s is invalid", bookmark)
 		}
 	}
 

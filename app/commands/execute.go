@@ -12,12 +12,12 @@ import (
 // ExecuteCommandNumber executes command by its number in history file.
 func ExecuteCommandNumber(pseudoTTY bool, number int, env *environments.Environment) {
 	if number < 0 {
-		panic("Cannot find such command")
+		utils.Logger.Panic("Cannot find such command")
 	}
 
 	commands, err := historyentries.GetCommands(historyentries.GetCommandsPrecise, nil, env, number)
 	if err != nil {
-		panic(err)
+		utils.Logger.Panic(err)
 	}
 	command, _ := commands.Result().(historyentries.HistoryEntry)
 	cmd, _ := command.GetCommand()
@@ -29,7 +29,7 @@ func ExecuteCommandNumber(pseudoTTY bool, number int, env *environments.Environm
 func ExecuteBookmark(pseudoTTY bool, name string, env *environments.Environment) {
 	content, err := ioutil.ReadFile(env.GetBookmarkFileName(name))
 	if err != nil {
-		panic("Unknown bookmark")
+		utils.Logger.Panic("Unknown bookmark")
 	}
 
 	execute(pseudoTTY, string(content))

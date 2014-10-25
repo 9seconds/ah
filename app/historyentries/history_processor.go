@@ -4,6 +4,7 @@ import (
 	logrus "github.com/Sirupsen/logrus"
 
 	"github.com/9seconds/ah/app/environments"
+	"github.com/9seconds/ah/app/utils"
 )
 
 func processHistories(env *environments.Environment) (chan bool, chan *HistoryEntry) {
@@ -12,11 +13,10 @@ func processHistories(env *environments.Environment) (chan bool, chan *HistoryEn
 
 	go func() {
 		entries := make(map[string]bool)
-		logger, _ := env.GetLogger()
 
 		files, err := env.GetTraceFilenames()
 		if err != nil {
-			logger.WithFields(logrus.Fields{
+			utils.Logger.WithFields(logrus.Fields{
 				"error": err,
 			}).Warn("Error on traces directory listing")
 			resultChan <- true
@@ -26,6 +26,7 @@ func processHistories(env *environments.Environment) (chan bool, chan *HistoryEn
 		for _, file := range files {
 			entries[file.Name()] = true
 		}
+		utils.Logger.WithField("filenames", entries).Info("Parsed filenames")
 
 		for entry := range consumeChan {
 			if _, found := entries[entry.GetTraceName()]; found {

@@ -31,7 +31,7 @@ func ConvertTimestamp(timestamp int) *time.Time {
 func Open(filename string) *os.File {
 	handler, err := os.Open(filename)
 	if err != nil {
-		panic(err)
+		Logger.Panic(err)
 	}
 	return handler
 }
@@ -44,21 +44,21 @@ func GetStatusCode(err *exec.ExitError) int {
 
 	waitStatus, ok := err.Sys().(syscall.WaitStatus)
 	if !ok {
-		panic("It seems you have an unsupported OS")
+		Logger.Panic("It seems you have an unsupported OS")
 	}
 	return waitStatus.ExitStatus()
 }
 
 // RemoveWithLogging does the same as os.Remove does but logs.
-func RemoveWithLogging(logger *logrus.Logger, fileName string) error {
+func RemoveWithLogging(fileName string) error {
 	err := os.Remove(fileName)
 
 	if err == nil {
-		logger.WithFields(logrus.Fields{
+		Logger.WithFields(logrus.Fields{
 			"filename": fileName,
 		}).Info("File was deleted")
 	} else {
-		logger.WithFields(logrus.Fields{
+		Logger.WithFields(logrus.Fields{
 			"filename": fileName,
 			"error":    err,
 		}).Warn("File was not deleted")

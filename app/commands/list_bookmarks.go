@@ -8,15 +8,14 @@ import (
 	logrus "github.com/Sirupsen/logrus"
 
 	"github.com/9seconds/ah/app/environments"
+	"github.com/9seconds/ah/app/utils"
 )
 
 // ListBookmarks prints the list of bookmarks with their content
 func ListBookmarks(env *environments.Environment) {
-	logger, _ := env.GetLogger()
-
 	bookmarksFileInfos, err := env.GetBookmarkFilenames()
 	if err != nil {
-		panic(err)
+		utils.Logger.Panic(err)
 	}
 
 	maxLength := 1
@@ -28,7 +27,7 @@ func ListBookmarks(env *environments.Environment) {
 	}
 
 	template := "%-" + strconv.Itoa(maxLength) + "s    %s\n"
-	logger.WithFields(logrus.Fields{
+	utils.Logger.WithFields(logrus.Fields{
 		"template": template,
 	}).Info("Calculated template to print")
 
@@ -37,7 +36,7 @@ func ListBookmarks(env *environments.Environment) {
 
 		content, err := ioutil.ReadFile(env.GetBookmarkFileName(fileName))
 		if err != nil {
-			logger.WithFields(logrus.Fields{
+			utils.Logger.WithFields(logrus.Fields{
 				"filename": fileName,
 				"error":    err,
 			}).Warn("Cannot read a content of the file so skip")

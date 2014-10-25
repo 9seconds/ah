@@ -15,7 +15,7 @@ import (
 func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	output, err := ioutil.TempFile(os.TempDir(), "ah")
 	if err != nil {
-		panic("Cannot create temporary file")
+		utils.Logger.Panic("Cannot create temporary file")
 	}
 
 	bufferedOutput := gzip.NewWriter(output)
@@ -31,7 +31,7 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 
 	preciseCommand, cmdErr := historyentries.GetCommands(historyentries.GetCommandsSingle, nil, env)
 	if cmdErr != nil {
-		panic("Sorry, cannot detect the number of the command")
+		utils.Logger.Panic("Sorry, cannot detect the number of the command")
 	}
 	cmd := preciseCommand.Result().(historyentries.HistoryEntry)
 
