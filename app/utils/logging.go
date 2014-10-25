@@ -1,15 +1,15 @@
 package utils
 
 import (
-	"os"
 	"bytes"
+	"os"
 
 	logrus "github.com/Sirupsen/logrus"
 )
 
 var Logger = logrus.New()
 
-type disabledFormatter struct {}
+type disabledFormatter struct{}
 
 func init() {
 	EnableLogging()

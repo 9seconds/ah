@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"strconv"
-	"io"
 
 	logrus "github.com/Sirupsen/logrus"
 	docopt "github.com/docopt/docopt-go"
@@ -112,9 +112,9 @@ func main() {
 	}
 
 	utils.Logger.WithFields(logrus.Fields{
-		"arguments": arguments,
+		"arguments":   arguments,
 		"environment": env,
-}).Debug("Ready to start")
+	}).Debug("Ready to start")
 
 	utils.Logger.WithFields(logrus.Fields{
 		"error": os.MkdirAll(env.GetTracesDir(), 0777),
