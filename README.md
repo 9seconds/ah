@@ -1,6 +1,8 @@
 ah
 ==
 
+[![Build Status](https://travis-ci.org/9seconds/ah.svg?branch=master)](https://travis-ci.org/9seconds/ah)
+
 *This is totally incomplete description. Read it just to get an idea what is going on here*
 
 ah is a simple externder of your terminal session history. Basically it has
