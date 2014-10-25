@@ -7,6 +7,9 @@ go:
 install:
   - go get code.google.com/p/go.tools/cmd/vet
 
+script:
+  - make -j 4 ci
+
 notifications:
   email:
     - nineseconds@yandex.ru

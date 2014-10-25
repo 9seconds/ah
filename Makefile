@@ -28,6 +28,7 @@ all: tools prog-build
 tools: fix vet lint
 cross: cross-linux cross-darwin cross-freebsd
 clean: prog-clean cross-clean
+ci: tools cross
 
 # ----------------------------------------------------------------------------
 
@@ -50,7 +51,7 @@ govet:
 	go get code.google.com/p/go.tools/cmd/vet || true
 
 golint:
-	go get github.com/golang/lint || true
+	go get github.com/golang/lint/golint || true
 
 save: godep
 	godep save
