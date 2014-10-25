@@ -40,6 +40,7 @@ Usage:
     ah [options] e <commandNumberOrBookMarkName>
     ah [options] t [-y] [--] <command>...
     ah [options] l <numberOfCommandYouWantToCheck>
+    ah [options] lb
     ah [options] (gt | gb) (--keepLatest <keepLatest> | --olderThan <olderThan> | --all)
     ah (-h | --help)
     ah --version
@@ -139,6 +140,9 @@ func main() {
 	} else if arguments["gt"].(bool) || arguments["gb"].(bool) {
 		logger.Info("Execute command 'gc'")
 		exec = executeGC
+	} else if arguments["lb"].(bool) {
+		logger.Info("Execute command 'listBookmarks'")
+		exec = executeListBookmarks
 	} else {
 		logger.Info("No valid choices", arguments)
 		panic("Unknown command. Please be more precise")
@@ -287,4 +291,8 @@ func executeGC(arguments map[string]interface{}, env *environments.Environment) 
 	}).Info("Arguments")
 
 	commands.GC(gcType, gcDir, param, env)
+}
+
+func executeListBookmarks(_ map[string]interface{}, env *environments.Environment) {
+	commands.ListBookmarks(env)
 }
