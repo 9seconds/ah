@@ -2,9 +2,9 @@ package utils
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"strings"
-	"fmt"
 
 	logrus "github.com/Sirupsen/logrus"
 )
@@ -14,7 +14,7 @@ var Logger = logrus.New()
 
 type (
 	disabledFormatter struct{}
-	enabledFormatter struct{}
+	enabledFormatter  struct{}
 )
 
 func init() {

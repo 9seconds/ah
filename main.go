@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"regexp"
 	"strconv"
@@ -176,11 +177,13 @@ func executeShow(arguments map[string]interface{}, env *environments.Environment
 	if arguments["--grep"] != nil {
 		query := arguments["--grep"].(string)
 		if arguments["--fuzzy"].(bool) {
-			regex := ""
+			regex := new(bytes.Buffer)
 			for _, character := range query {
-				regex += ".*?" + regexp.QuoteMeta(string(character))
+				regex.WriteString(".*?")
+				regex.WriteString(regexp.QuoteMeta(string(character)))
 			}
-			query = regex + ".*?"
+			regex.WriteString(".*?")
+			query = regex.String()
 		}
 		filter = utils.CreateRegexp(query)
 	}
