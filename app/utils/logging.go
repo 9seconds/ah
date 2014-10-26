@@ -28,19 +28,25 @@ func (df disabledFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 func (ef enabledFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	buffer := bytes.NewBufferString(strings.ToUpper(entry.Level.String()))
+	level := strings.ToUpper(entry.Level.String())
+	buffer := bytes.NewBufferString(level)
+
+	indent := make([]byte, len(level) + 1)
+	for idx := 0; idx < len(indent); idx++ {
+		indent[idx] = ' '
+	}
 
 	buffer.WriteString(" | ")
 	buffer.WriteString(entry.Message)
 	if len(entry.Data) > 0 {
-		buffer.WriteString("\n     [ ")
 		for key, value := range entry.Data {
+			buffer.WriteByte('\n')
+			buffer.Write(indent)
+			buffer.WriteString("* ")
 			buffer.WriteString(key)
-			buffer.WriteString("=<")
+			buffer.WriteString(" -> ")
 			fmt.Fprint(buffer, value)
-			buffer.WriteString("> ")
 		}
-		buffer.WriteString("]")
 	}
 	buffer.WriteByte('\n')
 
