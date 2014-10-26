@@ -22,7 +22,7 @@ func ListTrace(argument string, env *environments.Environment) {
 	if err != nil {
 		utils.Logger.Panic(err)
 	}
-	command, _ := commands.Result().(historyentries.HistoryEntry)
+	command := commands.Result().(historyentries.HistoryEntry)
 	hashFilename := command.GetTraceName()
 	filename := env.GetTraceFileName(hashFilename)
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
@@ -35,6 +35,7 @@ func ListTrace(argument string, env *environments.Environment) {
 	if err != nil {
 		utils.Logger.Panic(err)
 	}
+	defer ungzippedFile.Close()
 
 	scanner := bufio.NewScanner(ungzippedFile)
 	for scanner.Scan() {

@@ -14,7 +14,7 @@ type Slice struct {
 }
 
 // GetSliceIndex returns fixed index based on a given length. It is required if you
-// want to support negative indexing. I want to suppor it.
+// want to support negative indexing. I want to support it.
 func GetSliceIndex(index int, length int) int {
 	if index >= 0 {
 		return index
@@ -47,39 +47,40 @@ func extractNils() (*Slice, error) {
 	return &Slice{Start: 0, Finish: -1}, nil
 }
 
-func extractSingle(single string) (*Slice, error) {
+func extractSingle(single string) (slice *Slice, err error) {
 	converted, err := strconv.Atoi(convertSubstituteToMinus(single))
 	if err == nil {
-		slice := Slice{Start: -converted - 1, Finish: -1}
-		return &slice, nil
+		slice = &Slice{Start: -converted - 1, Finish: -1}
+	} else {
+		err = fmt.Errorf("Cannot convert %v to integer", err)
 	}
-	return nil, fmt.Errorf("Cannot convert %v to integer", err)
+	return
 }
 
-func extractStartFinish(start string, finish string) (*Slice, error) {
-	slice := new(Slice)
+func extractStartFinish(start string, finish string) (slice *Slice, err error) {
+	slice = new(Slice)
 
 	converted, err := parseInt(convertSubstituteToMinus(start))
 	if err != nil {
-		return nil, err
+		return
 	}
 	slice.Start = converted
 
 	converted, err = parseInt(convertSubstituteToMinus(finish))
 	if err != nil {
-		return nil, err
+		return
 	}
 	slice.Finish = converted
 
-	return slice, nil
+	return
 }
 
-func parseInt(str string) (int, error) {
-	converted, err := strconv.Atoi(str)
-	if err == nil {
-		return converted, nil
+func parseInt(str string) (converted int, err error) {
+	converted, err = strconv.Atoi(str)
+	if err != nil {
+		err = fmt.Errorf("Cannot convert %v to integer", err)
 	}
-	return 0, fmt.Errorf("Cannot convert %v to integer", err)
+	return
 }
 
 func convertSubstituteToMinus(str string) string {

@@ -28,12 +28,12 @@ func ConvertTimestamp(timestamp int) *time.Time {
 }
 
 // Open just a small wrapper on os.Open which panics if something goes wrong.
-func Open(filename string) *os.File {
+func Open(filename string) (handler *os.File) {
 	handler, err := os.Open(filename)
 	if err != nil {
 		Logger.Panic(err)
 	}
-	return handler
+	return
 }
 
 // GetStatusCode returns an exit code from exec.ExitError
@@ -62,6 +62,7 @@ func RemoveWithLogging(fileName string) error {
 			"filename": fileName,
 			"error":    err,
 		}).Warn("File was not deleted")
+		return err
 	}
 
 	return nil

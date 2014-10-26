@@ -21,17 +21,19 @@ func init() {
 	EnableLogging()
 }
 
-func (df disabledFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+func (df disabledFormatter) Format(entry *logrus.Entry) (buf []byte, err error) {
 	buffer := bytes.NewBufferString(entry.Message)
 	buffer.WriteByte('\n')
-	return buffer.Bytes(), nil
+	buf = buffer.Bytes()
+
+	return
 }
 
-func (ef enabledFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+func (ef enabledFormatter) Format(entry *logrus.Entry) (buf []byte, err error) {
 	level := strings.ToUpper(entry.Level.String())
 	buffer := bytes.NewBufferString(level)
 
-	indent := make([]byte, len(level) + 1)
+	indent := make([]byte, len(level)+1)
 	for idx := 0; idx < len(indent); idx++ {
 		indent[idx] = ' '
 	}
@@ -49,8 +51,9 @@ func (ef enabledFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		}
 	}
 	buffer.WriteByte('\n')
+	buf = buffer.Bytes()
 
-	return buffer.Bytes(), nil
+	return
 }
 
 // EnableLogging enables verbose logging mode.

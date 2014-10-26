@@ -7,9 +7,9 @@ import (
 	"github.com/9seconds/ah/app/utils"
 )
 
-func processHistories(env *environments.Environment) (chan bool, chan *HistoryEntry) {
-	resultChan := make(chan bool, 1)
-	consumeChan := make(chan *HistoryEntry, historyEventsCapacity)
+func processHistories(env *environments.Environment) (resultChan chan bool, consumeChan chan *HistoryEntry) {
+	resultChan = make(chan bool, 1)
+	consumeChan = make(chan *HistoryEntry, historyEventsCapacity)
 
 	go func() {
 		entries := make(map[string]bool)
@@ -36,5 +36,5 @@ func processHistories(env *environments.Environment) (chan bool, chan *HistoryEn
 		resultChan <- true
 	}()
 
-	return resultChan, consumeChan
+	return
 }

@@ -29,8 +29,8 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	bufferedOutput.Close()
 	output.Close()
 
-	preciseCommand, cmdErr := historyentries.GetCommands(historyentries.GetCommandsSingle, nil, env)
-	if cmdErr != nil {
+	preciseCommand, err := historyentries.GetCommands(historyentries.GetCommandsSingle, nil, env)
+	if err != nil {
 		utils.Logger.Panic("Sorry, cannot detect the number of the command")
 	}
 	cmd := preciseCommand.Result().(historyentries.HistoryEntry)

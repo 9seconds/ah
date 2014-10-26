@@ -20,18 +20,17 @@ func (r *Regexp) Match(suspected string) bool {
 
 // Groups returns a slice of a groups of regular expression applied to the
 // string.
-func (r *Regexp) Groups(suspected string) ([]string, error) {
+func (r *Regexp) Groups(suspected string) (groups []string, err error) {
 	indexes := r.exp.FindStringSubmatchIndex(suspected)
 	if indexes == nil {
-		return nil, fmt.Errorf("Cannot get groups for %s", suspected)
+		err = fmt.Errorf("Cannot get groups for %s", suspected)
+	} else {
+		groups = make([]string, len(indexes)/2-1)
+		for idx := 0; idx < len(groups); idx++ {
+			groups[idx] = suspected[indexes[2*idx+2]:indexes[2*idx+3]]
+		}
 	}
-
-	groups := make([]string, len(indexes)/2-1)
-	for idx := 0; idx < len(groups); idx++ {
-		groups[idx] = suspected[indexes[2*idx+2]:indexes[2*idx+3]]
-	}
-
-	return groups, nil
+	return
 }
 
 // CreateRegexp creates a regexp with MustCompile (or equialent) method.

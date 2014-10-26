@@ -22,16 +22,14 @@ func Bookmark(commandNumber int, bookmarkAs string, env *environments.Environmen
 	if len(commands) <= commandNumber {
 		utils.Logger.Panic("Command number does not exist")
 	}
-
 	command := commands[commandNumber-1]
-	cmd, _ := command.GetCommand()
-	filename := env.GetBookmarkFileName(bookmarkAs)
 
+	filename := env.GetBookmarkFileName(bookmarkAs)
 	file, err := os.Create(filename)
 	if err != nil {
 		utils.Logger.Panicf("Cannot create bookmark %s: %v", filename, err)
 	}
 	defer file.Close()
 
-	file.WriteString(cmd)
+	file.WriteString(command.GetCommand())
 }

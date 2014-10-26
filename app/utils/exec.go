@@ -49,22 +49,22 @@ func Exec(pseudoTTY bool, stdin io.Reader, stdout io.Writer, stderr io.Writer, c
 	return nil // dammit, go!!!
 }
 
-func runPTYCommand(cmd *exec.Cmd) (*os.File, *os.File, *os.File, error) {
-	inPTY, inTTY, inErr := pty.Open()
-	if inErr != nil {
-		return nil, nil, nil, inErr
+func runPTYCommand(cmd *exec.Cmd) (inPTY *os.File, outPTY *os.File, errPTY *os.File, err error) {
+	inPTY, inTTY, err := pty.Open()
+	if err != nil {
+		return
 	}
 	defer inTTY.Close()
 
-	outPTY, outTTY, outErr := pty.Open()
-	if outErr != nil {
-		return nil, nil, nil, outErr
+	outPTY, outTTY, err := pty.Open()
+	if err != nil {
+		return
 	}
 	defer outTTY.Close()
 
-	errPTY, errTTY, errErr := pty.Open()
-	if errErr != nil {
-		return nil, nil, nil, errErr
+	errPTY, errTTY, err := pty.Open()
+	if err != nil {
+		return
 	}
 	defer errTTY.Close()
 
@@ -73,15 +73,14 @@ func runPTYCommand(cmd *exec.Cmd) (*os.File, *os.File, *os.File, error) {
 	cmd.Stderr = errTTY
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setctty: true, Setsid: true}
 
-	err := cmd.Start()
+	err = cmd.Start()
 	if err != nil {
 		inPTY.Close()
 		outPTY.Close()
 		errPTY.Close()
-		return nil, nil, nil, err
 	}
 
-	return inPTY, outPTY, errPTY, nil
+	return
 }
 
 func attachSignalsToProcess(command *exec.Cmd) {
@@ -96,7 +95,7 @@ func attachSignalsToProcess(command *exec.Cmd) {
 
 	currentCommand = command
 
-	channel := make(chan os.Signal, 10)
+	channel := make(chan os.Signal, 1)
 	signal.Notify(channel,
 		syscall.SIGTERM,
 		syscall.SIGINT,

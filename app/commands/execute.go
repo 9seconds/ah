@@ -19,10 +19,9 @@ func ExecuteCommandNumber(pseudoTTY bool, number int, env *environments.Environm
 	if err != nil {
 		utils.Logger.Panic(err)
 	}
-	command, _ := commands.Result().(historyentries.HistoryEntry)
-	cmd, _ := command.GetCommand()
+	command := commands.Result().(historyentries.HistoryEntry)
 
-	execute(pseudoTTY, cmd)
+	execute(pseudoTTY, command.GetCommand())
 }
 
 // ExecuteBookmark executes command by its bookmark name.

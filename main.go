@@ -122,32 +122,34 @@ func main() {
 	}).Info("Create bookmarks dir")
 
 	var exec executor
-	if arguments["t"].(bool) {
+	switch {
+	case arguments["t"].(bool):
 		utils.Logger.Info("Execute command 'tee'")
 		exec = executeTee
-	} else if arguments["s"].(bool) {
+	case arguments["s"].(bool):
 		utils.Logger.Info("Execute command 'show'")
 		exec = executeShow
-	} else if arguments["l"].(bool) {
+	case arguments["l"].(bool):
 		utils.Logger.Info("Execute command 'listTrace'")
 		exec = executeListTrace
-	} else if arguments["b"].(bool) {
-		utils.Logger.Info("Execute command 'bookmark'")
-		exec = executeBookmark
-	} else if arguments["e"].(bool) {
+	case arguments["b"].(bool):
+		utils.Logger.Info("Execute command 'listTrace'")
+		exec = executeListTrace
+	case arguments["e"].(bool):
 		utils.Logger.Info("Execute command 'execute'")
 		exec = executeExec
-	} else if arguments["gt"].(bool) || arguments["gb"].(bool) {
-		utils.Logger.Info("Execute command 'gc'")
-		exec = executeGC
-	} else if arguments["lb"].(bool) {
+	case arguments["lb"].(bool):
 		utils.Logger.Info("Execute command 'listBookmarks'")
 		exec = executeListBookmarks
-	} else if arguments["rb"].(bool) {
+	case arguments["rb"].(bool):
 		utils.Logger.Info("Execute command 'removeBookmarks'")
 		exec = executeRemoveBookmarks
-	} else {
+	case arguments["gt"].(bool) || arguments["gb"].(bool):
+		utils.Logger.Info("Execute command 'gc'")
+		exec = executeGC
+	default:
 		utils.Logger.Panic("Unknown command. Please be more precise")
+		return
 	}
 	exec(arguments, env)
 }
@@ -207,11 +209,9 @@ func executeListTrace(arguments map[string]interface{}, env *environments.Enviro
 }
 
 func executeBookmark(arguments map[string]interface{}, env *environments.Environment) {
-	var commandNumber int
-	if number, err := strconv.Atoi(arguments["<commandNumber>"].(string)); err != nil {
-		utils.Logger.Panicf("Cannot understand command number: %d", commandNumber)
-	} else {
-		commandNumber = number
+	number, err := strconv.Atoi(arguments["<commandNumber>"].(string))
+	if err != nil {
+		utils.Logger.Panicf("Cannot understand command number: %d", number)
 	}
 
 	bookmarkAs := arguments["<bookmarkAs>"].(string)
@@ -220,11 +220,11 @@ func executeBookmark(arguments map[string]interface{}, env *environments.Environ
 	}
 
 	utils.Logger.WithFields(logrus.Fields{
-		"commandNumber": commandNumber,
+		"commandNumber": number,
 		"bookmarkAs":    bookmarkAs,
 	}).Info("Arguments of 'bookmark'")
 
-	commands.Bookmark(commandNumber, bookmarkAs, env)
+	commands.Bookmark(number, bookmarkAs, env)
 }
 
 func executeExec(arguments map[string]interface{}, env *environments.Environment) {
@@ -236,50 +236,44 @@ func executeExec(arguments map[string]interface{}, env *environments.Environment
 		"tty": tty,
 	}).Info("Arguments of 'bookmark'")
 
-	if commandNumber, err := strconv.Atoi(commandNumberOrBookMarkName); err == nil {
+	commandNumber, err := strconv.Atoi(commandNumberOrBookMarkName)
+	switch {
+	case err == nil:
 		utils.Logger.Info("Execute command number ", commandNumber)
 		commands.ExecuteCommandNumber(tty, commandNumber, env)
-	} else if validateBookmarkName.Match(commandNumberOrBookMarkName) {
+	case validateBookmarkName.Match(commandNumberOrBookMarkName):
 		utils.Logger.Info("Execute bookmark ", commandNumberOrBookMarkName)
 		commands.ExecuteBookmark(tty, commandNumberOrBookMarkName, env)
-	} else {
+	default:
 		utils.Logger.Panic("Incorrect bookmark name! It should be started with alphabet letter, and alphabet or digits after!")
 	}
 }
 
 func executeGC(arguments map[string]interface{}, env *environments.Environment) {
-	var param int
-	var gcType commands.GcType
-
 	gcDir := commands.GcTracesDir
 	if arguments["gb"].(bool) {
 		gcDir = commands.GcBookmarksDir
 	}
 
-	if arguments["--keepLatest"].(bool) {
+	var gcType commands.GcType
+	stringParam := "1"
+	switch {
+	case arguments["--keepLatest"].(bool):
 		gcType = commands.GcKeepLatest
-		paramString := arguments["<keepLatest>"].(string)
-		paramConverted, err := strconv.Atoi(paramString)
-		if err != nil {
-			utils.Logger.Panic(err)
-		}
-		param = paramConverted
-	} else if arguments["--olderThan"].(bool) {
+		stringParam = arguments["<keepLatest>"].(string)
+	case arguments["--olderThan"].(bool):
 		gcType = commands.GcOlderThan
-		paramString := arguments["<olderThan>"].(string)
-		paramConverted, err := strconv.Atoi(paramString)
-		if err != nil {
-			utils.Logger.Panic(err)
-		}
-		param = paramConverted
-	} else if arguments["--all"].(bool) {
+		stringParam = arguments["<keepLatest>"].(string)
+	case arguments["--all"].(bool):
 		gcType = commands.GcAll
-		param = 1
-	} else {
+	default:
 		utils.Logger.Panic("Unknown subcommand command")
 	}
 
-	if param <= 0 {
+	param, err := strconv.Atoi(stringParam)
+	if err != nil {
+		utils.Logger.Panic(err)
+	} else if param <= 0 {
 		utils.Logger.Panic("Parameter of garbage collection has to be > 0")
 	}
 
