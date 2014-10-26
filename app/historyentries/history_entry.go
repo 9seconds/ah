@@ -72,6 +72,13 @@ func (he HistoryEntry) HasHistory() bool {
 	return he.hasHistory
 }
 
+// String makes a string representation of the structure
+func (he HistoryEntry) String() string {
+	timestamp := utils.ConvertTimestamp(he.timestamp).Format(time.RFC3339)
+	return fmt.Sprintf("HistoryEntry{number=%d command=\"%s\" timestamp=\"%s\" hasHistory=%t}",
+		he.number, he.command, timestamp, he.hasHistory)
+}
+
 // ToString converts history entry to the string representation according to the environment setting.
 func (he HistoryEntry) ToString(env *environments.Environment) string {
 	command := he.command
