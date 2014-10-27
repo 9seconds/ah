@@ -28,18 +28,19 @@ func getParser(env *environments.Environment) Parser {
 	shell := env.GetShell()
 
 	shellSpecific := parseBash
+	var currentNumber uint = 1
 	if shell == environments.ShellZsh {
 		shellSpecific = parseZsh
+		currentNumber = 0
 	}
 
 	return func(keeper Keeper, scanner *bufio.Scanner, filter *utils.Regexp, historyChan chan *HistoryEntry) (Keeper, error) {
 		defer close(historyChan)
 
-		var currentNumber uint
 		continueToConsume := false
 		currentEvent := keeper.Init()
 
-		for scanner.Scan() && keeper.Continue() {
+		for keeper.Continue() && scanner.Scan() {
 			text := scanner.Text()
 
 			utils.Logger.WithFields(logrus.Fields{
@@ -60,6 +61,11 @@ func getParser(env *environments.Environment) Parser {
 					"event": currentEvent,
 				}).Info("Commit event")
 				currentEvent = keeper.Commit(currentEvent, historyChan)
+			}
+
+			if text == "" {
+				utils.Logger.Info("Skip empty line")
+				continue
 			}
 
 			continueToConsume, currentNumber, currentEvent = shellSpecific(

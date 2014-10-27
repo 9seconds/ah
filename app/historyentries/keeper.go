@@ -129,7 +129,7 @@ func (rk *rangeKeeper) Result() interface{} {
 	return rk.entries[:rk.currentIndex-rk.start]
 }
 
-func getKeeper(mode GetCommandsMode, varargs ...int) (Keeper) {
+func getKeeper(mode GetCommandsMode, varargs ...int) Keeper {
 	switch mode {
 	case GetCommandsAll:
 		return new(allKeeper)
