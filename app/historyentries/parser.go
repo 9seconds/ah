@@ -87,7 +87,7 @@ func getParser(env *environments.Environment) Parser {
 func parseBash(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp, historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
 	continueToConsume := false
 	if bashTimestampRegexp.Match(text) {
-		if converted, err := strconv.Atoi(text[1:]); err == nil {
+		if converted, err := strconv.ParseInt(text[1:], 10, 64); err == nil {
 			utils.Logger.WithFields(logrus.Fields{
 				"timestamp": converted,
 			}).Info("Parse timestamp")
@@ -137,7 +137,7 @@ func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *Hist
 		return continueToConsume, currentNumber, currentEvent
 	}
 
-	converted, _ := strconv.Atoi(timestamp)
+	converted, _ := strconv.ParseInt(timestamp, 10, 64)
 	currentEvent.command = command
 	currentEvent.number = currentNumber
 	currentEvent.timestamp = converted

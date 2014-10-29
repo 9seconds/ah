@@ -20,7 +20,7 @@ const (
 type HistoryEntry struct {
 	number     uint
 	command    string
-	timestamp  int
+	timestamp  int64
 	hasHistory bool
 }
 
@@ -35,7 +35,7 @@ func (he HistoryEntry) GetCommand() string {
 }
 
 // GetTimestamp returns a timestamp of the history entry.
-func (he HistoryEntry) GetTimestamp() int {
+func (he HistoryEntry) GetTimestamp() int64 {
 	return he.timestamp
 }
 

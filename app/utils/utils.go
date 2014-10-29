@@ -22,8 +22,8 @@ func SplitCommandToChunks(cmd string) (string, []string) {
 }
 
 // ConvertTimestamp converts timestamp to time structure
-func ConvertTimestamp(timestamp int) *time.Time {
-	converted := time.Unix(int64(timestamp), 0)
+func ConvertTimestamp(timestamp int64) *time.Time {
+	converted := time.Unix(timestamp, 0)
 	return &converted
 }
 

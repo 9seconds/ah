@@ -66,6 +66,6 @@ func EnableLogging() {
 // DisableLogging disables logging.
 func DisableLogging() {
 	Logger.Out = os.Stderr
-	Logger.Level = logrus.PanicLevel
+	Logger.Level = logrus.ErrorLevel
 	Logger.Formatter = disabledFormatter{}
 }

@@ -30,7 +30,12 @@ const (
 	ShellBash = "bash"
 )
 
-var currentUser *user.User
+var (
+	currentUser *user.User
+
+	// CreatedAt defines a time when program was executed.
+	CreatedAt = time.Now().Unix()
+)
 
 func init() {
 	fetchedCurrentUser, err := user.Current()
@@ -143,7 +148,7 @@ func (e *Environment) SetHistTimeFormat(histTimeFormat string) {
 }
 
 // FormatTimeStamp formats a timestamp according to the environment settings.
-func (e *Environment) FormatTimeStamp(timestamp int) (string, error) {
+func (e *Environment) FormatTimeStamp(timestamp int64) (string, error) {
 	return e.FormatTime(utils.ConvertTimestamp(timestamp))
 }
 
