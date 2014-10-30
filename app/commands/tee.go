@@ -2,13 +2,13 @@ package commands
 
 import (
 	"bytes"
-	"compress/gzip"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"regexp"
+	"bufio"
 
 	"github.com/9seconds/ah/app/environments"
 	"github.com/9seconds/ah/app/historyentries"
@@ -21,8 +21,8 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	if err != nil {
 		utils.Logger.Panic("Cannot create temporary file")
 	}
+	bufferedOutput := bufio.NewWriter(output)
 
-	bufferedOutput := gzip.NewWriter(output)
 	combinedStdout := io.MultiWriter(os.Stdout, bufferedOutput)
 	combinedStderr := io.MultiWriter(os.Stderr, bufferedOutput)
 
@@ -30,10 +30,10 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 		os.Stdin, combinedStdout, combinedStderr,
 		input[0], input[1:]...)
 
-	bufferedOutput.Close()
+	bufferedOutput.Flush()
 	output.Close()
 
-	if hash, err := getPreciseHash(env); err == nil {
+	if hash, err := getPreciseHash(input, env); err == nil {
 		err = os.Rename(output.Name(), env.GetTraceFileName(hash))
 		if err != nil {
 			utils.Logger.Errorf("Cannot save trace: %v", err)
@@ -47,8 +47,8 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	}
 }
 
-func getPreciseHash(env *environments.Environment) (hash string, err error) {
-	commands, err := historyentries.GetCommands(historyentries.GetCommandsAll, getPreciseFilter(), env)
+func getPreciseHash(cmd []string, env *environments.Environment) (hash string, err error) {
+	commands, err := historyentries.GetCommands(historyentries.GetCommandsAll, getPreciseFilter(cmd), env)
 	if err != nil {
 		err = fmt.Errorf("Cannot fetch commands list: %v", err)
 		return
@@ -72,13 +72,13 @@ func getPreciseHash(env *environments.Environment) (hash string, err error) {
 	return
 }
 
-func getPreciseFilter() *utils.Regexp {
+func getPreciseFilter(cmd []string) *utils.Regexp {
 	buffer := new(bytes.Buffer)
-	for idx := 0; idx < len(os.Args)-1; idx++ {
-		buffer.WriteString(regexp.QuoteMeta(os.Args[idx]))
+	for idx := 0; idx < len(cmd)-1; idx++ {
+		buffer.WriteString(regexp.QuoteMeta(cmd[idx]))
 		buffer.WriteString(`\s+`)
 	}
-	buffer.WriteString(regexp.QuoteMeta(os.Args[len(os.Args)-1]))
+	buffer.WriteString(regexp.QuoteMeta(cmd[len(cmd)-1]))
 
 	return utils.CreateRegexp(buffer.String())
 }
