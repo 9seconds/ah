@@ -1,14 +1,15 @@
 package commands
 
 import (
+	"bufio"
 	"bytes"
+	"compress/gzip"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"regexp"
-	"bufio"
 
 	"github.com/9seconds/ah/app/environments"
 	"github.com/9seconds/ah/app/historyentries"
@@ -21,15 +22,17 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	if err != nil {
 		utils.Logger.Panic("Cannot create temporary file")
 	}
-	bufferedOutput := bufio.NewWriter(output)
 
-	combinedStdout := io.MultiWriter(os.Stdout, bufferedOutput)
-	combinedStderr := io.MultiWriter(os.Stderr, bufferedOutput)
+	bufferedOutput := bufio.NewWriter(output)
+	gzippedWrapper := utils.NewSynchronizedWriter(gzip.NewWriter(bufferedOutput))
+	combinedStdout := io.MultiWriter(os.Stdout, gzippedWrapper)
+	combinedStderr := io.MultiWriter(os.Stderr, gzippedWrapper)
 
 	commandError := utils.Exec(pseudoTTY,
 		os.Stdin, combinedStdout, combinedStderr,
 		input[0], input[1:]...)
 
+	gzippedWrapper.Close()
 	bufferedOutput.Flush()
 	output.Close()
 

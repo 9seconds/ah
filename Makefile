@@ -19,7 +19,7 @@ DOCKER_IMAGE    := golang:1.3.3-cross
 # ----------------------------------------------------------------------------
 
 define crosscompile
-	GOOS=$(1) GOARCH=$(2) go build -a -o $(CROSS_BUILD_DIR)/$(1)-$(2) $(GOLANG_AH)
+	GOOS=$(1) GOARCH=$(2) CGO_ENABLED=1 go build -a -o $(CROSS_BUILD_DIR)/$(1)-$(2) $(GOLANG_AH)
 endef
 
 # ----------------------------------------------------------------------------
@@ -99,4 +99,4 @@ cross-freebsd-%: restore cross-build-directory
 
 cross-docker:
 	$(DOCKER_PROG) run --rm -i -t -v "$(ROOT_DIR)":$(DOCKER_WORKDIR) -w $(DOCKER_WORKDIR) $(DOCKER_IMAGE) \
-	bash -i -c "make -j 4 cross"
+	bash -i -c "apt-get -qq update && apt-get install -y -qq pkg-config zlib1g-dev && make -j 4 cross"
