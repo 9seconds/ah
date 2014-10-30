@@ -32,18 +32,21 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 		os.Stdin, combinedStdout, combinedStderr,
 		input[0], input[1:]...)
 
-	gzippedWrapper.Close()
-	bufferedOutput.Flush()
-	output.Close()
+	defer func() {
+		// defer here because command may cause a panic but we do not want to lose any output
+		gzippedWrapper.Close()
+		bufferedOutput.Flush()
+		output.Close()
 
-	if hash, err := getPreciseHash(input, env); err == nil {
-		err = os.Rename(output.Name(), env.GetTraceFileName(hash))
-		if err != nil {
-			utils.Logger.Errorf("Cannot save trace: %v", err)
+		if hash, err := getPreciseHash(input, env); err == nil {
+			err = os.Rename(output.Name(), env.GetTraceFileName(hash))
+			if err != nil {
+				utils.Logger.Errorf("Cannot save trace: %v. Get it here: %s", err, output.Name())
+			}
+		} else {
+			utils.Logger.Errorf("Error occured on fetching command number: %v", err)
 		}
-	} else {
-		utils.Logger.Errorf("Error occured on fetching command number: %v", err)
-	}
+	}()
 
 	if commandError != nil {
 		os.Exit(utils.GetStatusCode(commandError))
