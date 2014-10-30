@@ -17,8 +17,6 @@ import (
 
 // Tee implements t (trace, tee) command.
 func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
-	hashChan := getPreciseHashChan(env)
-
 	output, err := ioutil.TempFile(os.TempDir(), "ah")
 	if err != nil {
 		utils.Logger.Panic("Cannot create temporary file")
@@ -35,14 +33,13 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	bufferedOutput.Close()
 	output.Close()
 
-	result := <-hashChan
-	if hash, ok := result.(string); ok {
-		err := os.Rename(output.Name(), env.GetTraceFileName(hash))
+	if hash, err := getPreciseHash(env); err == nil {
+		err = os.Rename(output.Name(), env.GetTraceFileName(hash))
 		if err != nil {
 			utils.Logger.Errorf("Cannot save trace: %v", err)
 		}
 	} else {
-		utils.Logger.Errorf("Error occured on fetching command number: %v", result)
+		utils.Logger.Errorf("Error occured on fetching command number: %v", err)
 	}
 
 	if commandError != nil {
@@ -50,33 +47,29 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	}
 }
 
-func getPreciseHashChan(env *environments.Environment) (hashChan chan interface{}) {
-	hashChan = make(chan interface{}, 1)
+func getPreciseHash(env *environments.Environment) (hash string, err error) {
+	commands, err := historyentries.GetCommands(historyentries.GetCommandsAll, getPreciseFilter(), env)
+	if err != nil {
+		err = fmt.Errorf("Cannot fetch commands list: %v", err)
+		return
+	}
+	commandList := commands.Result().([]historyentries.HistoryEntry)
 
-	go func() {
-		commands, err := historyentries.GetCommands(historyentries.GetCommandsAll, getPreciseFilter(), env)
-		if err != nil {
-			hashChan <- fmt.Errorf("Cannot fetch commands list: %v", err)
-			return
+	if len(commandList) == 0 {
+		err = errors.New("Command list is empty")
+		return
+	}
+
+	found := len(commandList) - 1
+	for idx := len(commandList) - 2; idx >= 0; idx-- {
+		if commandList[idx].GetTimestamp() < environments.CreatedAt {
+			break
 		}
-		commandList := commands.Result().([]historyentries.HistoryEntry)
+		found = idx
+	}
+	hash = commandList[found].GetTraceName()
 
-		if len(commandList) == 0 {
-			hashChan <- errors.New("Command list is empty")
-			return
-		}
-
-		found := len(commandList) - 1
-		for idx := len(commandList) - 2; idx >= 0; idx-- {
-			if commandList[idx].GetTimestamp() < environments.CreatedAt {
-				break
-			}
-			found = idx
-		}
-		hashChan <- commandList[found].GetTraceName()
-	}()
-
-	return hashChan
+	return
 }
 
 func getPreciseFilter() *utils.Regexp {
