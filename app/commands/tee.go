@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"regexp"
 
 	"github.com/9seconds/ah/app/environments"
@@ -27,10 +28,7 @@ func Tee(input string, interactive bool, pseudoTTY bool, env *environments.Envir
 	combinedStdout := io.MultiWriter(os.Stdout, gzippedWrapper)
 	combinedStderr := io.MultiWriter(os.Stderr, gzippedWrapper)
 
-	commandError := utils.Exec(input,
-		env.GetShell(), interactive, pseudoTTY,
-		os.Stdin, combinedStdout, combinedStderr)
-
+	var commandError *exec.ExitError
 	defer func() {
 		// defer here because command may cause a panic but we do not want to lose any output
 		gzippedWrapper.Close()
@@ -45,11 +43,15 @@ func Tee(input string, interactive bool, pseudoTTY bool, env *environments.Envir
 		} else {
 			utils.Logger.Errorf("Error occured on fetching command number: %v", err)
 		}
+
+		if commandError != nil {
+			os.Exit(utils.GetStatusCode(commandError))
+		}
 	}()
 
-	if commandError != nil {
-		os.Exit(utils.GetStatusCode(commandError))
-	}
+	commandError = utils.Exec(input,
+		env.GetShell(), interactive, pseudoTTY,
+		os.Stdin, combinedStdout, combinedStderr)
 }
 
 func getPreciseHash(cmd string, env *environments.Environment) (hash string, err error) {
