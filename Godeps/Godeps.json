@@ -4,8 +4,8 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.5.1-35-g2e36101",
-			"Rev": "2e36101a197f56f60ca6c37c3c256ed3713a9649"
+			"Comment": "v0.5.1-37-g6ebb4e7",
+			"Rev": "6ebb4e7b3c24b9fef150d7693e728cb1ebadf1f5"
 		},
 		{
 			"ImportPath": "github.com/docopt/docopt-go",
@@ -13,13 +13,13 @@
 			"Rev": "c5dac536301992c0371c6115d998fb62944bfad3"
 		},
 		{
+			"ImportPath": "github.com/jehiah/go-strftime",
+			"Rev": "834e15c05a45371503440cc195bbd05c9a0968d9"
+		},
+		{
 			"ImportPath": "github.com/kr/pty",
 			"Comment": "release.r56-19-g67e2db2",
 			"Rev": "67e2db24c831afa6c64fc17b4a143390674365ef"
-		},
-		{
-			"ImportPath": "github.com/weidewang/go-strftime",
-			"Rev": "7e82c21e2e5cf5e8ab11763f19f937c9fd6e47aa"
 		}
 	]
 }

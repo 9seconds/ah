@@ -100,3 +100,4 @@ cross-freebsd-%: restore cross-build-directory
 cross-docker:
 	$(DOCKER_PROG) run --rm -i -t -v "$(ROOT_DIR)":$(DOCKER_WORKDIR) -w $(DOCKER_WORKDIR) $(DOCKER_IMAGE) \
 	bash -i -c "make -j 4 cross"
+	sudo chown -R $(USER):$(USER) $(CROSS_BUILD_DIR)

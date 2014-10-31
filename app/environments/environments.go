@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
-	strftime "github.com/weidewang/go-strftime"
+	strftime "github.com/jehiah/go-strftime"
 
 	"github.com/9seconds/ah/app/utils"
 )
@@ -157,7 +157,7 @@ func (e *Environment) FormatTime(timestamp *time.Time) (string, error) {
 	if e.histTimeFormat == "" {
 		return "", errors.New("Cannot format time for absent time format")
 	}
-	return strftime.Strftime(timestamp, e.histTimeFormat), nil
+	return strftime.Format(e.histTimeFormat, *timestamp), nil
 }
 
 // GetTraceFilenames returns a list of filenames for traces.
