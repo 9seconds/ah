@@ -17,22 +17,22 @@ import (
 
 const docoptOptions = `ah - A better history.
 
-Ah is a better way to traverse the history of your shell prompts. Right now it
-supports only 3 additional possibilities you are probably have dreamt about:
-    1. Good searching;
-    2. Better memoizing of entries;
-    3. Storing an output of the commands.
+Ah is a better way to traverse the history of your shell prompts. You can
+store an outputs of your commands, you can search with regular expressions
+out of box, bookmark commands etc.
 
-Searching is done using 's' command. You may filter output or fetch a history
-slice you are wondering about. Filtering uses regular expressions or fuzzy
-matching out of box.
+You may want to check detailed readme at https://github.com/9seconds/ah
 
-Memoizing means that you have an ability to bookmark some favourite commands
-and use ah to store some sort of short snippets or ad-hoc shell scripts.
-
-And ah gives you a possibility to have a persistent storage of an output
-of any command you are executing. And you can return back to it any time
-you want.
+Just a short reminder on possible subcommands:
+    - s  - shows extended output from your HISTFILE
+    - b  - bookmarks any command you want to have a faster access.
+    - e  - executes a command by its bookmark name or history number.
+    - t  - traces an output of the command and stores it safely.
+    - l  - lists you an output of the command.
+    - lb - lists available bookmarks.
+    - rb - removes bookmarks.
+    - gt - garbage collecting of the traces. Cleans old outputs.
+    - gb - garbage collecting of the bookmarks. Swipes out old ones.
 
 Usage:
     ah [options] s [-z] [-g PATTERN] [<lastNcommands> | <startFromNCommand> <finishByMCommand>]
@@ -47,16 +47,26 @@ Usage:
     ah --version
 
 Options:
-    -s SHELL, --shell=SHELL                               Shell flavour you are using. By default, ah will do some shallow investigations.
-    -f HISTFILE, --histfile=HISTFILE                      The path to a history file. By default ah will try to use default history file of your shell
-    -t HISTTIMEFORMAT, --histtimeformat=HISTTIMEFORMAT    A time format for history output. Will use $HISTTIMEFORMAT by default.
-    -d APPDIR, --appdir=APPDIR                            A place where ah has to store its data.
-    -g PATTERN, --grep PATTERN                            A pattern to filter command lines. It is regular expression if no -f option is set.
-    -y, --tty                                             Allocates pseudo-tty is necessary
-    -z, --fuzzy                                           Interpret -g pattern as fuzzy match string.
-    -v, --debug                                           Shows a debug log of command execution.`
+    -s SHELL, --shell=SHELL
+       Shell flavour you are using.
+       By default, ah will do some shallow investigations.
+    -f HISTFILE, --histfile=HISTFILE
+       The path to a history file.
+       By default ah will try to use default history file of your shell.
+    -t HISTTIMEFORMAT, --histtimeformat=HISTTIMEFORMAT
+       A time format for history output. Will use $HISTTIMEFORMAT by default.
+    -d APPDIR, --appdir=APPDIR
+       A place where ah has to store its data.
+    -g PATTERN, --grep PATTERN
+       A pattern to filter command lines. It is regular expression if no -f option is set.
+    -y, --tty
+       Allocates pseudo-tty is necessary
+    -z, --fuzzy
+       Interpret -g pattern as fuzzy match string.
+    -v, --debug
+       Shows a debug log of command execution.`
 
-const version = "ah 0.7.2"
+const version = "ah 0.8"
 
 var validateBookmarkName = utils.CreateRegexp(`^[A-Za-z_]\w*$`)
 
