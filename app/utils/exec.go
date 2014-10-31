@@ -5,20 +5,14 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	pty "github.com/kr/pty"
 )
 
-var (
-	commandLock    = new(sync.Mutex)
-	currentCommand *exec.Cmd
-)
-
 // Exec runs a command with connected streams and according to the TTY usage.
-func Exec(pseudoTTY bool, stdin io.Reader, stdout io.Writer, stderr io.Writer, cmd string, args ...string) *exec.ExitError {
-	command := exec.Command(cmd, args...)
+func Exec(cmd string, shell string, interactive bool, pseudoTTY bool, stdin io.Reader, stdout io.Writer, stderr io.Writer) *exec.ExitError {
+	command := getCommand(cmd, interactive, shell)
 	attachSignalsToProcess(command)
 
 	if pseudoTTY {
@@ -84,17 +78,6 @@ func runPTYCommand(cmd *exec.Cmd) (inPTY *os.File, outPTY *os.File, errPTY *os.F
 }
 
 func attachSignalsToProcess(command *exec.Cmd) {
-	if currentCommand != nil {
-		Logger.Panic("Command already executing")
-	}
-	commandLock.Lock()
-	defer commandLock.Unlock()
-	if currentCommand != nil {
-		Logger.Panic("Command already executing")
-	}
-
-	currentCommand = command
-
 	channel := make(chan os.Signal, 1)
 	signal.Notify(channel,
 		syscall.SIGTERM,
@@ -118,9 +101,20 @@ func attachSignalsToProcess(command *exec.Cmd) {
 				incomingSignal = syscall.SIGKILL
 			}
 
-			if currentCommand != nil {
-				currentCommand.Process.Signal(incomingSignal)
+			if command != nil {
+				command.Process.Signal(incomingSignal)
 			}
 		}
 	}()
+}
+
+func getCommand(cmd string, interactive bool, shell string) (command *exec.Cmd) {
+	if interactive {
+		command = exec.Command(shell, "-i", "-c", cmd)
+	} else {
+		cmd, args := SplitCommandToChunks(cmd)
+		command = exec.Command(cmd, args...)
+	}
+
+	return
 }

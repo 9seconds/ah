@@ -2,7 +2,6 @@ package commands
 
 import (
 	"bufio"
-	"bytes"
 	"compress/gzip"
 	"errors"
 	"fmt"
@@ -17,7 +16,7 @@ import (
 )
 
 // Tee implements t (trace, tee) command.
-func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
+func Tee(input string, interactive bool, pseudoTTY bool, env *environments.Environment) {
 	output, err := ioutil.TempFile(os.TempDir(), "ah")
 	if err != nil {
 		utils.Logger.Panic("Cannot create temporary file")
@@ -28,9 +27,9 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	combinedStdout := io.MultiWriter(os.Stdout, gzippedWrapper)
 	combinedStderr := io.MultiWriter(os.Stderr, gzippedWrapper)
 
-	commandError := utils.Exec(pseudoTTY,
-		os.Stdin, combinedStdout, combinedStderr,
-		input[0], input[1:]...)
+	commandError := utils.Exec(input,
+		env.GetShell(), interactive, pseudoTTY,
+		os.Stdin, combinedStdout, combinedStderr)
 
 	defer func() {
 		// defer here because command may cause a panic but we do not want to lose any output
@@ -53,8 +52,9 @@ func Tee(input []string, pseudoTTY bool, env *environments.Environment) {
 	}
 }
 
-func getPreciseHash(cmd []string, env *environments.Environment) (hash string, err error) {
-	commands, err := historyentries.GetCommands(historyentries.GetCommandsAll, getPreciseFilter(cmd), env)
+func getPreciseHash(cmd string, env *environments.Environment) (hash string, err error) {
+	filter := utils.CreateRegexp(regexp.QuoteMeta(cmd))
+	commands, err := historyentries.GetCommands(historyentries.GetCommandsAll, filter, env)
 	if err != nil {
 		err = fmt.Errorf("Cannot fetch commands list: %v", err)
 		return
@@ -76,15 +76,4 @@ func getPreciseHash(cmd []string, env *environments.Environment) (hash string, e
 	hash = commandList[found].GetTraceName()
 
 	return
-}
-
-func getPreciseFilter(cmd []string) *utils.Regexp {
-	buffer := new(bytes.Buffer)
-	for idx := 0; idx < len(cmd)-1; idx++ {
-		buffer.WriteString(regexp.QuoteMeta(cmd[idx]))
-		buffer.WriteString(`\s+`)
-	}
-	buffer.WriteString(regexp.QuoteMeta(cmd[len(cmd)-1]))
-
-	return utils.CreateRegexp(buffer.String())
 }

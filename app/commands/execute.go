@@ -10,7 +10,7 @@ import (
 )
 
 // ExecuteCommandNumber executes command by its number in history file.
-func ExecuteCommandNumber(pseudoTTY bool, number int, env *environments.Environment) {
+func ExecuteCommandNumber(number int, interactive bool, pseudoTTY bool, env *environments.Environment) {
 	if number < 0 {
 		utils.Logger.Panic("Cannot find such command")
 	}
@@ -21,26 +21,24 @@ func ExecuteCommandNumber(pseudoTTY bool, number int, env *environments.Environm
 	}
 	command := commands.Result().(historyentries.HistoryEntry)
 
-	execute(pseudoTTY, command.GetCommand())
+	execute(command.GetCommand(), env.GetShell(), interactive, pseudoTTY)
 }
 
 // ExecuteBookmark executes command by its bookmark name.
-func ExecuteBookmark(pseudoTTY bool, name string, env *environments.Environment) {
+func ExecuteBookmark(name string, interactive bool, pseudoTTY bool, env *environments.Environment) {
 	content, err := ioutil.ReadFile(env.GetBookmarkFileName(name))
 	if err != nil {
 		utils.Logger.Panic("Unknown bookmark")
 	}
 
-	execute(pseudoTTY, string(content))
+	execute(string(content), env.GetShell(), interactive, pseudoTTY)
 }
 
-func execute(pseudoTTY bool, command string) {
-	cmd, args := utils.SplitCommandToChunks(command)
-
-	executeError := utils.Exec(pseudoTTY,
-		os.Stdin, os.Stdout, os.Stderr,
-		cmd, args...)
-	if executeError != nil {
-		os.Exit(utils.GetStatusCode(executeError))
+func execute(command string, shell string, interactive bool, pseudoTTY bool) {
+	err := utils.Exec(command,
+		shell, interactive, pseudoTTY,
+		os.Stdin, os.Stdout, os.Stderr)
+	if err != nil {
+		os.Exit(utils.GetStatusCode(err))
 	}
 }

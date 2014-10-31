@@ -5,6 +5,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	logrus "github.com/Sirupsen/logrus"
 	docopt "github.com/docopt/docopt-go"
@@ -37,8 +38,8 @@ Just a short reminder on possible subcommands:
 Usage:
     ah [options] s [-z] [-g PATTERN] [<lastNcommands> | <startFromNCommand> <finishByMCommand>]
     ah [options] b <commandNumber> <bookmarkAs>
-    ah [options] e [-y] <commandNumberOrBookMarkName>
-    ah [options] t [-y] [--] <command>...
+    ah [options] e [-x] [-y] <commandNumberOrBookMarkName>
+    ah [options] t [-x] [-y] [--] <command>...
     ah [options] l <numberOfCommandYouWantToCheck>
     ah [options] lb
     ah [options] rb <bookmarkToRemove>...
@@ -60,7 +61,9 @@ Options:
     -g PATTERN, --grep PATTERN
        A pattern to filter command lines. It is regular expression if no -f option is set.
     -y, --tty
-       Allocates pseudo-tty is necessary
+       Allocates pseudo-tty is necessary.
+    -x, --run-in-real-shell
+       Runs a command in real interactive shell.
     -z, --fuzzy
        Interpret -g pattern as fuzzy match string.
     -v, --debug
@@ -166,14 +169,17 @@ func main() {
 
 func executeTee(arguments map[string]interface{}, env *environments.Environment) {
 	cmds := arguments["<command>"].([]string)
+	cmd := strings.Join(cmds, " ")
 	tty := arguments["--tty"].(bool)
+	interactive := arguments["--run-in-real-shell"].(bool)
 
 	utils.Logger.WithFields(logrus.Fields{
-		"command arguments": cmds,
-		"pseudo-tty":        tty,
+		"command":     cmd,
+		"pseudo-tty":  tty,
+		"interactive": interactive,
 	}).Info("Arguments of 'tee'")
 
-	commands.Tee(cmds, tty, env)
+	commands.Tee(cmd, interactive, tty, env)
 }
 
 func executeShow(arguments map[string]interface{}, env *environments.Environment) {
@@ -240,20 +246,22 @@ func executeBookmark(arguments map[string]interface{}, env *environments.Environ
 func executeExec(arguments map[string]interface{}, env *environments.Environment) {
 	commandNumberOrBookMarkName := arguments["<commandNumberOrBookMarkName>"].(string)
 	tty := arguments["--tty"].(bool)
+	interactive := arguments["--run-in-real-shell"].(bool)
 
 	utils.Logger.WithFields(logrus.Fields{
 		"commandNumberOrBookMarkName": commandNumberOrBookMarkName,
-		"tty": tty,
+		"tty":         tty,
+		"interactive": interactive,
 	}).Info("Arguments of 'bookmark'")
 
 	commandNumber, err := strconv.Atoi(commandNumberOrBookMarkName)
 	switch {
 	case err == nil:
 		utils.Logger.Info("Execute command number ", commandNumber)
-		commands.ExecuteCommandNumber(tty, commandNumber, env)
+		commands.ExecuteCommandNumber(commandNumber, interactive, tty, env)
 	case validateBookmarkName.Match(commandNumberOrBookMarkName):
 		utils.Logger.Info("Execute bookmark ", commandNumberOrBookMarkName)
-		commands.ExecuteBookmark(tty, commandNumberOrBookMarkName, env)
+		commands.ExecuteBookmark(commandNumberOrBookMarkName, interactive, tty, env)
 	default:
 		utils.Logger.Panic("Incorrect bookmark name! It should be started with alphabet letter, and alphabet or digits after!")
 	}
