@@ -3,8 +3,6 @@ package utils
 import (
 	"fmt"
 	"regexp"
-
-	//re2 "code.google.com/p/sre2/sre2"
 )
 
 // Regexp is just a wrapper to play with different regular expression libraries

@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"regexp"
 
 	"github.com/9seconds/ah/app/environments"
 	"github.com/9seconds/ah/app/historyentries"
@@ -55,8 +54,7 @@ func Tee(input string, interactive bool, pseudoTTY bool, env *environments.Envir
 }
 
 func getPreciseHash(cmd string, env *environments.Environment) (hash string, err error) {
-	filter := utils.CreateRegexp(regexp.QuoteMeta(cmd))
-	commands, err := historyentries.GetCommands(historyentries.GetCommandsAll, filter, env)
+	commands, err := historyentries.GetCommands(historyentries.GetCommandsAll, nil, env)
 	if err != nil {
 		err = fmt.Errorf("Cannot fetch commands list: %v", err)
 		return
