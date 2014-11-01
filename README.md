@@ -40,18 +40,18 @@ You may build ah from sources or just download proper binary from
 To install it from sources, just do following:
 
 ```bash
-git clone https://github.com/9seconds/ah.git $GOPATH/src/github.com/9seconds/ah
-cd $GOPATH/src/github.com/9seconds/ah
-make install
+$ git clone https://github.com/9seconds/ah.git $GOPATH/src/github.com/9seconds/ah
+$ cd $GOPATH/src/github.com/9seconds/ah
+$ make install
 ```
 
 It will copy the binary into `$GOBIN/ah`. Or you may do that:
 
 ```bash
-git clone https://github.com/9seconds/ah.git $GOPATH/src/github.com/9seconds/ah
-cd $GOPATH/src/github.com/9seconds/ah
-make
-mv ah /wherever/you/want
+$ git clone https://github.com/9seconds/ah.git $GOPATH/src/github.com/9seconds/ah
+$ cd $GOPATH/src/github.com/9seconds/ah
+$ make
+$ mv ah /wherever/you/want
 ```
 
 
