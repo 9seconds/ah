@@ -114,8 +114,8 @@ $ ah s -z -g doigreREPOsoru
 
 And I will see matched `docker images | egrep -v 'REPOSITORY|<none>' | cut -d' ' -f1 | sort -u`
 I bold important letters here. Basically I do it thinking like this:
-"I want __do__ cker __i__ mages, it was __gre__ p __REPO__ SITORY
-and __sor__ ted with -__u__" typing just a few letters.
+*"I want __do__ cker __i__ mages, it was __gre__ p __REPO__ SITORY
+and __sor__ ted with -__u__"* typing just a few letters.
 
 
 
@@ -124,3 +124,21 @@ Show an output
 
 Output could be checked with `l` command. Just type `ah l 10024` and you are
 good.
+
+
+
+Bookmarks
+---------
+
+You may pin any command number with bookmark using `b` command. After that
+you may execute it with `e` command. To fetch a list of bookmarks use `lb` commands,
+to remove several, use `rb` command.
+
+So simple.
+
+
+Garbage collecting
+------------------
+
+If you do not need a lot of traces or bookmarks, you may get rid of them using
+`gt` (garbage collect traces) and `gb` (garbage collect bookmarks) commands.
