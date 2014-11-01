@@ -3,114 +3,124 @@ ah
 
 [![Build Status](https://travis-ci.org/9seconds/ah.svg?branch=master)](https://travis-ci.org/9seconds/ah)
 
-*This is totally incomplete description. Read it just to get an idea what is going on here*
+ah is a complementary software for a builtin shell `history` command
+you've used to use for years and I hope you've dreamt about it as I did.
 
-ah is a simple externder of your terminal session history. Basically it has
-to be used to capture outputs of your terminal command executions but it
-also provides you with a couple of niceties.
+It is not a replacement for `history` but anyway it perfectly matches
+a common `history | grep` pattern of usage but it allows you to do a bit more.
+It allows you to trace an output of a command, to fetch it from the archive,
+to bookmark some commands and to execute them.
 
-ah has several commands. Let's do some short crash course where I will show
-you all of possibilities.
+How often do you kick yourself for loosing important output of your SSH session?
+Sometimes you use screen or tmux for that purposes but it is pretty awkward to
+search through it. Or how often do you find yourself typing CTRL+R or juggling
+with Up and Down buttons to find something like
+`make && mv -f coolapp $DIR/bin && coolapp`. Stop it for a great good, ah will
+likely help you here.
 
-Crash course
-------------
+Currently it supports following features:
+* Tracing an output
+* Fetching the output trace
+* Bookmarking command
+* Executing of a command by number or bookmark
+* Showing a history with greping on regular expression or fuzzy match
 
-So you want ~~to be a hero~~ to capture an output of some of your commands
+ah does not maintains its own history file, it uses your regular `~/.bash_history`
+or `.zsh_history`. So no worries here: bash or zsh maintains a history and
+ah gives you several features on the top.
 
-```bash
-$ find . -name "*.go"
-./ah.go
-./app/history_entries/parsers.go
-./app/history_entries/get_commands.go
-./app/history_entries/history_entry.go
-./app/environments/environments.go
-./app/utils/utils.go
-./app/commands/bookmark.go
-./app/commands/list_trace.go
-./app/commands/tee.go
-./app/commands/execute.go
-./app/commands/show.go
-./app/slices/slices.go
-```
+I would like you to show you how.
 
-Nice but what are you going to do if you want to store an output? Use `tee`!
 
-```bash
-$ find . -name "*.go" 2>&1 | tee output.log
-```
 
-Okay. But what are you going to do if you delete `output.log` for some reason?
-Or if you close your terminal? Use `ah`!
+Tracing an output
+-----------------
+
+So you want ~~to be a hero~~ to capture an output of some of your commands.
+Usually if you know that output is rather important, you use `tee` command.
 
 ```bash
-$ ah t -- find . -name "*.go"
-./ah.go
-./app/history_entries/parsers.go
-./app/history_entries/get_commands.go
-./app/history_entries/history_entry.go
-./app/environments/environments.go
-./app/utils/utils.go
-./app/commands/bookmark.go
-./app/commands/list_trace.go
-./app/commands/tee.go
-./app/commands/execute.go
-./app/commands/show.go
-./app/slices/slices.go
+$ find . -name "*.go" -type f | tee files.log
 ```
 
-Okay, the same output. The same exit code. What is the profit? Let's check the
-next command, `ah s`
+The main problem here is that only stdout will go to the `files.log`. You will
+lose stderr, right? The common way of solving that is redirecting a streams
+
+```bash
+$ find . -name "*.go" -type f 2>&1 | tee files.log
+```
+
+or
+
+```bash
+$ find . -name "*.go" -type f |& tee files.log
+```
+
+in a recent Bash-compatible shells. The problem here, you are streams are
+dangerously mixed into one and there is no way to pipe them into different processes.
+Let's say, you want to have output stored persistently but in the same time you
+want to have only filtered log messages on the screen. You can't do something
+like this.
+
+```bash
+$ find . -name "*.go" -type f |& tee files.log > /dev/null 2> grep -i localhost
+```
+
+Okay, this a rare case but please notice that ah knows how to handle that. Let's
+talk on how to store this output, where to keep it. You may store it somehow
+but it is a way better to have a tool which allows you not to think on how to
+name this output and how to remember which was the command.
+
+Let's talk about ah now. Ah has its main `t` command which works rather simple.
+
+```bash
+$ ah t -- find . -name "*.go" -type f
+```
+
+Thats all. You will see output on the screen and you may pipe both streams wherever
+you want! Ah will store it persistently. And it will finish execution with
+precisely the same exit code as the original command does. Neat, right?
+
+If you want to run a program which requires a pseudo TTY, just use `-y` option.
+And if you want to have your aliases to work, just run it with `-x` option!
+
+Ah supports SSH and you may even run curses apps there, they will work, no worries.
+
+
+
+Show the history
+----------------
+
+Now let's talk about viewing the history. ah does that with `s` command.
 
 ```bash
 $ ah s
 ...
-!10045 *	./ah t -- find . -name "*.go"
-!10046  	ah s
+!10024  (01.11.14 16:01:09) *  ah t -- find . -name "*.go" -type f
 ```
 
-Okay, it looks like a normal `history` output. What is the profit? ah has
-internal grep compatibility with fuzzy matching.
+What do we have here: we have banged command number (gues why it has ! here),
+we have a date (yes, `HISTTIMEFORMAT` supported!), we have a rather strange
+star mark and a command. What does that star mark mean? Basically it just shows
+that ah keeps a mixed output of that command and you may fetch it on demand.
+
+ah has `-g` options which allows you to grep this list. Argument - a regular
+expression. It also has a convenient flag `-z` which activates fuzzy match. It
+works like this
 
 ```bash
-$ ah -g docker
-...
-!9482  	sudo docker rmi $(sudo docker images -q)
-!9483  	sudo docker rm $(sudo docker ps -a -q)
-!9484  	sudo docker rmi $(sudo docker images -q)
-...
+$ ah s -z -g doigreREPOsoru
 ```
 
-By the way, if you use `$HISTTIMEFORMAT` then ah will interpret it as you expect
+And I will see matched `docker images | egrep -v 'REPOSITORY|<none>' | cut -d' ' -f1 | sort -u`
+I bold important letters here. Basically I do it thinking like this:
+*"I want __do__cker __i__mages, it was __gre__p __REPO__SITORY
+and __sor__ted with -__u__"* typing just a few letters.
 
-Let's checkout fuzzy matching
 
-```bash
-$ ah s -z -g find
-...
-!10042  	find . -name "*.go"
-!10045 *	./ah t -- find . -name "*.go"
-!10049  	./ah -z -g find
-...
-```
 
-Btw, have you noticed this little star mark? It means that log has been kept.
+Show an output
+--------------
 
-```bash
-$ ah l 10045
-./ah.go
-./app/history_entries/parsers.go
-./app/history_entries/get_commands.go
-./app/history_entries/history_entry.go
-./app/environments/environments.go
-./app/utils/utils.go
-./app/commands/bookmark.go
-./app/commands/list_trace.go
-./app/commands/tee.go
-./app/commands/execute.go
-./app/commands/show.go
-./app/slices/slices.go
-```
-
-Cool right?
-
-ah also has some cool features I will describe later.
+Output could be checked with `l` command. Just type `ah l 10024` and you are
+good.
