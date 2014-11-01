@@ -29,8 +29,30 @@ ah does not maintains its own history file, it uses your regular `~/.bash_histor
 or `.zsh_history`. So no worries here: bash or zsh maintains a history and
 ah gives you several features on the top.
 
-I would like you to show you how.
 
+
+Installation
+------------
+
+You may build ah from sources or just download proper binary from
+[releases](https://github.com/9seconds/ah/releases).
+
+To install it from sources, just do following:
+
+```bash
+git clone https://github.com/9seconds/ah.git $GOPATH/src/github.com/9seconds/ah
+cd $GOPATH/src/github.com/9seconds/ah
+make install
+```
+
+It will copy the binary into `$GOBIN/ah`. Or you may do that:
+
+```bash
+git clone https://github.com/9seconds/ah.git $GOPATH/src/github.com/9seconds/ah
+cd $GOPATH/src/github.com/9seconds/ah
+make
+mv ah /wherever/you/want
+```
 
 
 Tracing an output
