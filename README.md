@@ -114,8 +114,8 @@ $ ah s -z -g doigreREPOsoru
 
 And I will see matched `docker images | egrep -v 'REPOSITORY|<none>' | cut -d' ' -f1 | sort -u`
 I bold important letters here. Basically I do it thinking like this:
-*"I want __do__cker __i__mages, it was __gre__p __REPO__SITORY
-and __sor__ted with -__u__"* typing just a few letters.
+"I want __do__ cker __i__ mages, it was __gre__ p __REPO__ SITORY
+and __sor__ ted with -__u__" typing just a few letters.
 
 
 
