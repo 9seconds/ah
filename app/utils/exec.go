@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	term "github.com/docker/docker/pkg/term"
 	pty "github.com/kr/pty"
 )
 
@@ -15,24 +16,13 @@ func Exec(cmd string, shell string, interactive bool, pseudoTTY bool, stdin io.R
 	command := getCommand(cmd, interactive, shell)
 	attachSignalsToProcess(command)
 
+	var err error
 	if pseudoTTY {
-		pseudoStdin, pseudoStdout, pseudoStderr, pseudoPTYError := runPTYCommand(command)
-		if pseudoPTYError != nil {
-			Logger.Panic(pseudoPTYError)
-		}
-		go io.Copy(pseudoStdin, stdin)
-		go io.Copy(stdout, pseudoStdout)
-		go io.Copy(stderr, pseudoStderr)
+		err = runTtyCommand(command, stdin, stdout, stderr)
 	} else {
-		command.Stdin = stdin
-		command.Stdout = stdout
-		command.Stderr = stderr
-		if startError := command.Start(); startError != nil {
-			Logger.Panic(startError)
-		}
+		err = runStdCommand(command, stdin, stdout, stderr)
 	}
 
-	err := command.Wait()
 	if err == nil {
 		return nil
 	} else if convertedError, ok := err.(*exec.ExitError); ok {
@@ -43,38 +33,59 @@ func Exec(cmd string, shell string, interactive bool, pseudoTTY bool, stdin io.R
 	return nil // dammit, go!!!
 }
 
-func runPTYCommand(cmd *exec.Cmd) (inPTY *os.File, outPTY *os.File, errPTY *os.File, err error) {
-	inPTY, inTTY, err := pty.Open()
+func runStdCommand(command *exec.Cmd, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
+	command.Stdin = stdin
+	command.Stdout = stdout
+	command.Stderr = stderr
+
+	if err := command.Start(); err != nil {
+		Logger.Panic(err)
+	}
+
+	return command.Wait()
+}
+
+func runTtyCommand(command *exec.Cmd, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
+	pty, err := pty.Start(command)
+	if err != nil {
+		return err
+	}
+	defer pty.Close()
+
+	hostFd := os.Stdin.Fd()
+	oldTerminalState, err := term.SetRawTerminal(hostFd)
+	if err != nil {
+		return err
+	}
+	defer term.RestoreTerminal(hostFd, oldTerminalState)
+
+	monitorTtyResize(hostFd, pty.Fd())
+
+	go io.Copy(pty, stdin)
+	go io.Copy(stdout, pty)
+
+	return command.Wait()
+}
+
+func monitorTtyResize(hostFd uintptr, guestFd uintptr) {
+	resizeTty(hostFd, guestFd)
+
+	winchChan := make(chan os.Signal, 1)
+	signal.Notify(winchChan, syscall.SIGWINCH)
+
+	go func() {
+		for _ = range winchChan {
+			resizeTty(hostFd, guestFd)
+		}
+	}()
+}
+
+func resizeTty(hostFd uintptr, guestFd uintptr) {
+	winsize, err := term.GetWinsize(hostFd)
 	if err != nil {
 		return
 	}
-	defer inTTY.Close()
-
-	outPTY, outTTY, err := pty.Open()
-	if err != nil {
-		return
-	}
-	defer outTTY.Close()
-
-	errPTY, errTTY, err := pty.Open()
-	if err != nil {
-		return
-	}
-	defer errTTY.Close()
-
-	cmd.Stdin = inTTY
-	cmd.Stdout = outTTY
-	cmd.Stderr = errTTY
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setctty: true, Setsid: true}
-
-	err = cmd.Start()
-	if err != nil {
-		inPTY.Close()
-		outPTY.Close()
-		errPTY.Close()
-	}
-
-	return
+	term.SetWinsize(guestFd, winsize)
 }
 
 func attachSignalsToProcess(command *exec.Cmd) {

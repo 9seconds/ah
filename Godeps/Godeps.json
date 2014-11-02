@@ -8,6 +8,11 @@
 			"Rev": "6ebb4e7b3c24b9fef150d7693e728cb1ebadf1f5"
 		},
 		{
+			"ImportPath": "github.com/docker/docker/pkg/term",
+			"Comment": "v1.3.0-313-g4d4a7b8",
+			"Rev": "4d4a7b81bf82e243bca07af815cb1fe03193b135"
+		},
+		{
 			"ImportPath": "github.com/docopt/docopt-go",
 			"Comment": "0.6.1-1-gc5dac53",
 			"Rev": "c5dac536301992c0371c6115d998fb62944bfad3"
