@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path"
 	"path/filepath"
 	"time"
 
 	strftime "github.com/jehiah/go-strftime"
+	homedir "github.com/mitchellh/go-homedir"
 
 	"github.com/9seconds/ah/app/utils"
 )
@@ -31,18 +31,20 @@ const (
 )
 
 var (
-	currentUser *user.User
+	// HomeDir defines a home of current user.
+	HomeDir string
 
 	// CreatedAt defines a time when program was executed.
 	CreatedAt = time.Now().Unix()
 )
 
 func init() {
-	fetchedCurrentUser, err := user.Current()
+	currentHomeDir, err := homedir.Dir()
 	if err != nil {
-		utils.Logger.Fatal("Impossible to detect current user")
+		os.Stderr.WriteString(fmt.Sprintf("Cannot fetch your home directory: %v", err))
+		os.Exit(1)
 	}
-	currentUser = fetchedCurrentUser
+	HomeDir = currentHomeDir
 }
 
 // Environment has all required information about environment ah is executed in
@@ -98,7 +100,7 @@ func (e *Environment) GetBookmarkFileName(name string) string {
 
 // DiscoverAppDir tries to discover app storage directory from the environment itself.
 func (e *Environment) DiscoverAppDir() {
-	e.SetAppDir(filepath.Join(currentUser.HomeDir, defaultAppDir))
+	e.SetAppDir(filepath.Join(HomeDir, defaultAppDir))
 }
 
 // GetAppDir returns an absolute path of the app storage directory and error if occured.
@@ -134,9 +136,9 @@ func (e *Environment) SetShell(shell string) error {
 
 // DiscoverHistFile tries to discover history file from the actual environment.
 func (e *Environment) DiscoverHistFile() {
-	e.histFile = filepath.Join(currentUser.HomeDir, defaultBashHistFile)
+	e.histFile = filepath.Join(HomeDir, defaultBashHistFile)
 	if e.shell == ShellZsh {
-		e.histFile = filepath.Join(currentUser.HomeDir, defaultZshHistFile)
+		e.histFile = filepath.Join(HomeDir, defaultZshHistFile)
 	}
 }
 
