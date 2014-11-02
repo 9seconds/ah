@@ -11,7 +11,7 @@ a common `history | grep` pattern of usage but it allows you to do a bit more.
 It allows you to trace an output of a command, to fetch it from the archive,
 to bookmark some commands and to execute them.
 
-How often do you kick yourself for loosing important output of your SSH session?
+How often do you kick yourself for losing important output of your SSH session?
 Sometimes you use screen or tmux for that purposes but it is pretty awkward to
 search through it. Or how often do you find yourself typing CTRL+R or juggling
 with Up and Down buttons to find something like
