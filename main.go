@@ -133,6 +133,9 @@ func main() {
 	utils.Logger.WithFields(logrus.Fields{
 		"error": os.MkdirAll(env.GetBookmarksDir(), 0777),
 	}).Info("Create bookmarks dir")
+	utils.Logger.WithFields(logrus.Fields{
+		"error": os.MkdirAll(env.GetTmpDir(), 0777),
+	}).Info("Create create temporary dir")
 
 	var exec executor
 	switch {

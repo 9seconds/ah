@@ -19,6 +19,7 @@ const (
 	defaultAppDir = ".ah"
 	tracesDir     = "traces"
 	bookmarksDir  = "bookmarks"
+	defaultTmpDir = "tmp"
 
 	defaultZshHistFile  = ".zsh_history"
 	defaultBashHistFile = ".bash_history"
@@ -56,6 +57,13 @@ type Environment struct {
 // OK checks if all required information was collected.
 func (e *Environment) OK() bool {
 	return e.appDir != "" && e.histFile != "" && e.shell != ""
+}
+
+// GetTmpDir returns a path to temporary directory
+// For the reason why it is required, please see this:
+// https://github.com/9seconds/ah/issues/3
+func (e *Environment) GetTmpDir() string {
+	return filepath.Join(e.appDir, defaultTmpDir)
 }
 
 // GetTracesDir returns an absolute path for the directory where traces should be stored.

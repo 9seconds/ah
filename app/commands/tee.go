@@ -17,7 +17,7 @@ import (
 
 // Tee implements t (trace, tee) command.
 func Tee(input string, interactive bool, pseudoTTY bool, env *environments.Environment) {
-	output, err := ioutil.TempFile(os.TempDir(), "ah")
+	output, err := ioutil.TempFile(env.GetTmpDir(), "ah")
 	if err != nil {
 		utils.Logger.Panic("Cannot create temporary file")
 	}
@@ -35,9 +35,12 @@ func Tee(input string, interactive bool, pseudoTTY bool, env *environments.Envir
 		output.Close()
 
 		if hash, err := getPreciseHash(input, env); err == nil {
-			err = os.Rename(output.Name(), env.GetTraceFileName(hash))
+			filename := env.GetTraceFileName(hash)
+			err = os.Rename(output.Name(), filename)
 			if err != nil {
 				utils.Logger.Errorf("Cannot save trace: %v. Get it here: %s", err, output.Name())
+			} else {
+				os.Remove(filename)
 			}
 		} else {
 			utils.Logger.Errorf("Error occured on fetching command number: %v", err)
