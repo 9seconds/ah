@@ -58,6 +58,8 @@ Options:
        A time format for history output. Will use $HISTTIMEFORMAT by default.
     -d APPDIR, --appdir=APPDIR
        A place where ah has to store its data.
+    -m TMPDIR, --tmpdir=TMPDIR
+       A temporary place where ah stores an output. Set it only if you need it.
     -g PATTERN, --grep PATTERN
        A pattern to filter command lines. It is regular expression if no -f option is set.
     -y, --tty
@@ -120,6 +122,13 @@ func main() {
 		env.DiscoverAppDir()
 	} else {
 		env.SetAppDir(argAppDir.(string))
+	}
+
+	argTmpDir := arguments["--tmpdir"]
+	if argTmpDir == nil {
+		env.DiscoverTmpDir()
+	} else {
+		env.SetTmpDir(argTmpDir.(string))
 	}
 
 	utils.Logger.WithFields(logrus.Fields{

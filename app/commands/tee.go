@@ -35,12 +35,11 @@ func Tee(input string, interactive bool, pseudoTTY bool, env *environments.Envir
 		output.Close()
 
 		if hash, err := getPreciseHash(input, env); err == nil {
-			filename := env.GetTraceFileName(hash)
-			err = os.Rename(output.Name(), filename)
+			err = os.Rename(output.Name(), env.GetTraceFileName(hash))
 			if err != nil {
 				utils.Logger.Errorf("Cannot save trace: %v. Get it here: %s", err, output.Name())
 			} else {
-				os.Remove(filename)
+				os.Remove(output.Name())
 			}
 		} else {
 			utils.Logger.Errorf("Error occured on fetching command number: %v", err)
