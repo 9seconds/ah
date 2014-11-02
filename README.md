@@ -139,6 +139,12 @@ I bold important letters here. Basically I do it thinking like this:
 *"I want __do__ cker __i__ mages, it was __gre__ p __REPO__ SITORY
 and __sor__ ted with -__u__"* typing just a few letters.
 
+It also supports number argument. Let's say `ah s 10` will show latest 10
+commands, `ah s 10 20` will show commands from 10 to 20. Also negative numbers
+are supported (but with underscore prefix, not hyphen), they are mostly work
+as Python slices. `ah s 10 _20` means literally "from 10 to the latest 20".
+Basically `ah s 10` equal to `ah s _10 _1`
+
 
 
 Show an output
