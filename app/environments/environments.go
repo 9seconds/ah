@@ -26,6 +26,7 @@ const (
 
 // ShellType sets a type of the shell
 type ShellType string
+
 // Codes for the supported shells
 const (
 	ShellZsh  ShellType = "zsh"
