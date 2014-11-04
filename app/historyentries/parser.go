@@ -96,7 +96,8 @@ func getParser(env *environments.Environment) Parser {
 	}
 }
 
-func parseBash(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp, historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
+func parseBash(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp,
+	historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
 	continueToConsume := false
 	if bashTimestampRegexp.Match(text) {
 		if converted, err := strconv.ParseInt(text[1:], 10, 64); err == nil {
@@ -131,7 +132,8 @@ func parseBash(keeper Keeper, text string, currentNumber uint, currentEvent *His
 	return continueToConsume, currentNumber, currentEvent
 }
 
-func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp, historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
+func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp,
+	historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
 	continueToConsume := false
 	groups, err := zshLineRegexp.Groups(text)
 
@@ -165,14 +167,21 @@ func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *Hist
 	return continueToConsume, currentNumber, currentEvent
 }
 
-func parseFish(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp, historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
+func parseFish(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp,
+	historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
 	if groups, err := fishCmdRegexp.Groups(text); err == nil {
-		currentEvent.command = groups[0]
-		currentEvent.number = currentNumber
+		command := strings.Replace(groups[0], `\\`, `\`, -1)
+		command = strings.Replace(command, `\n`, "\n", -1)
+		if filter == nil || filter.Match(command) {
+			currentEvent.command = command
+			currentEvent.number = currentNumber
+		}
 	} else if groups, err := fishWhenRegexp.Groups(text); err == nil {
-		converted, _ := strconv.ParseInt(groups[0], 10, 64)
-		currentEvent.timestamp = converted
-		currentEvent = keeper.Commit(currentEvent, historyChan)
+		if currentEvent.command != "" {
+			converted, _ := strconv.ParseInt(groups[0], 10, 64)
+			currentEvent.timestamp = converted
+			currentEvent = keeper.Commit(currentEvent, historyChan)
+		}
 		currentNumber++
 	}
 
