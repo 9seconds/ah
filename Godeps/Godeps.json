@@ -4,13 +4,13 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.5.1-37-g6ebb4e7",
+			"Comment": "v0.6.0",
 			"Rev": "6ebb4e7b3c24b9fef150d7693e728cb1ebadf1f5"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/term",
-			"Comment": "v1.3.0-313-g4d4a7b8",
-			"Rev": "4d4a7b81bf82e243bca07af815cb1fe03193b135"
+			"Comment": "v1.3.0-346-gfa59fe9",
+			"Rev": "fa59fe997c83e2a6968f8c03c64352acd71c26da"
 		},
 		{
 			"ImportPath": "github.com/docopt/docopt-go",
