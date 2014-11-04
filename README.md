@@ -29,6 +29,8 @@ ah does not maintains its own history file, it uses your regular `~/.bash_histor
 or `.zsh_history`. So no worries here: bash or zsh maintains a history and
 ah gives you several features on the top.
 
+ah supports Zsh, Bash and Fish.
+
 
 
 Installation
