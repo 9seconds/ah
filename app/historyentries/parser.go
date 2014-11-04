@@ -13,7 +13,11 @@ import (
 
 var (
 	bashTimestampRegexp = utils.CreateRegexp(`^#\s*\d+$`)
-	zshLineRegexp       = utils.CreateRegexp(`^: (\d+):\d;(.*?)$`)
+
+	zshLineRegexp = utils.CreateRegexp(`^: (\d+):\d;(.*?)$`)
+
+	fishCmdRegexp  = utils.CreateRegexp(`^- cmd:\s*(.*?)$`)
+	fishWhenRegexp = utils.CreateRegexp(`\s*when:\s*(\d+)$`)
 )
 
 type (
@@ -25,13 +29,21 @@ type (
 )
 
 func getParser(env *environments.Environment) Parser {
-	shell := env.GetShell()
+	var currentNumber uint
+	var shellSpecific ShellSpecificParser
 
-	shellSpecific := parseBash
-	var currentNumber uint = 1
-	if shell == environments.ShellZsh {
+	switch env.GetShell() {
+	case environments.ShellBash:
+		shellSpecific = parseBash
+		currentNumber = 1
+	case environments.ShellZsh:
 		shellSpecific = parseZsh
 		currentNumber = 0
+	case environments.ShellFish:
+		shellSpecific = parseFish
+		currentNumber = 0
+	default:
+		utils.Logger.Panicf("Unknown shell %v", env.GetShell())
 	}
 
 	return func(keeper Keeper, scanner *bufio.Scanner, filter *utils.Regexp, historyChan chan *HistoryEntry) (Keeper, error) {
@@ -151,4 +163,18 @@ func parseZsh(keeper Keeper, text string, currentNumber uint, currentEvent *Hist
 	}
 
 	return continueToConsume, currentNumber, currentEvent
+}
+
+func parseFish(keeper Keeper, text string, currentNumber uint, currentEvent *HistoryEntry, filter *utils.Regexp, historyChan chan *HistoryEntry) (bool, uint, *HistoryEntry) {
+	if groups, err := fishCmdRegexp.Groups(text); err == nil {
+		currentEvent.command = groups[0]
+		currentEvent.number = currentNumber
+	} else if groups, err := fishWhenRegexp.Groups(text); err == nil {
+		converted, _ := strconv.ParseInt(groups[0], 10, 64)
+		currentEvent.timestamp = converted
+		currentEvent = keeper.Commit(currentEvent, historyChan)
+		currentNumber++
+	}
+
+	return false, currentNumber, currentEvent
 }

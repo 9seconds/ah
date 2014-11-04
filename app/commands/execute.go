@@ -34,9 +34,9 @@ func ExecuteBookmark(name string, interactive bool, pseudoTTY bool, env *environ
 	execute(string(content), env.GetShell(), interactive, pseudoTTY)
 }
 
-func execute(command string, shell string, interactive bool, pseudoTTY bool) {
+func execute(command string, shell environments.ShellType, interactive bool, pseudoTTY bool) {
 	err := utils.Exec(command,
-		shell, interactive, pseudoTTY,
+		string(shell), interactive, pseudoTTY,
 		os.Stdin, os.Stdout, os.Stderr)
 	if err != nil {
 		os.Exit(utils.GetStatusCode(err))

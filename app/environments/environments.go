@@ -24,10 +24,13 @@ const (
 	defaultBashHistFile = ".bash_history"
 )
 
+// ShellType sets a type of the shell
+type ShellType string
 // Codes for the supported shells
 const (
-	ShellZsh  = "zsh"
-	ShellBash = "bash"
+	ShellZsh  ShellType = "zsh"
+	ShellBash ShellType = "bash"
+	ShellFish ShellType = "fish"
 )
 
 var (
@@ -36,6 +39,8 @@ var (
 
 	// CreatedAt defines a time when program was executed.
 	CreatedAt = time.Now().Unix()
+
+	defaultFishHistFile = filepath.Join(".config", "fish", "fish_history")
 )
 
 func init() {
@@ -52,7 +57,7 @@ type Environment struct {
 	appDir         string
 	histFile       string
 	histTimeFormat string
-	shell          string
+	shell          ShellType
 	tmpDir         string
 }
 
@@ -119,26 +124,37 @@ func (e *Environment) DiscoverShell() error {
 }
 
 // GetShell returns a shell code from the actual envrionment.
-func (e *Environment) GetShell() string {
+func (e *Environment) GetShell() ShellType {
 	return e.shell
 }
 
 // SetShell explicitly sets shell.
-func (e *Environment) SetShell(shell string) error {
-	baseShell := path.Base(shell)
+func (e *Environment) SetShell(shell string) (err error) {
+	baseShell := ShellType(path.Base(shell))
 
-	if baseShell == ShellZsh || baseShell == ShellBash {
+	switch baseShell {
+	case ShellZsh:
+		fallthrough
+	case ShellBash:
+		fallthrough
+	case ShellFish:
 		e.shell = baseShell
-		return nil
+	default:
+		err = fmt.Errorf("Shell %s is not supported", shell)
 	}
-	return fmt.Errorf("Shell %s is not supported", shell)
+
+	return
 }
 
 // DiscoverHistFile tries to discover history file from the actual environment.
 func (e *Environment) DiscoverHistFile() {
-	e.histFile = filepath.Join(HomeDir, defaultBashHistFile)
-	if e.shell == ShellZsh {
+	switch e.shell {
+	case ShellBash:
+		e.histFile = filepath.Join(HomeDir, defaultBashHistFile)
+	case ShellZsh:
 		e.histFile = filepath.Join(HomeDir, defaultZshHistFile)
+	case ShellFish:
+		e.histFile = filepath.Join(HomeDir, defaultFishHistFile)
 	}
 }
 

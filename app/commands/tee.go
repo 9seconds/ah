@@ -51,7 +51,7 @@ func Tee(input string, interactive bool, pseudoTTY bool, env *environments.Envir
 	}()
 
 	commandError = utils.Exec(input,
-		env.GetShell(), interactive, pseudoTTY,
+		string(env.GetShell()), interactive, pseudoTTY,
 		os.Stdin, combinedStdout, combinedStderr)
 }
 
