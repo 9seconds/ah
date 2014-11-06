@@ -9,11 +9,14 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/9seconds/ah/app/environments"
 	"github.com/9seconds/ah/app/historyentries"
 	"github.com/9seconds/ah/app/utils"
 )
+
+const teeDelta = 1
 
 // Tee implements t (trace, tee) command.
 func Tee(input string, interactive bool, pseudoTTY bool, env *environments.Environment) {
@@ -68,14 +71,86 @@ func getPreciseHash(cmd string, env *environments.Environment) (hash string, err
 		return
 	}
 
-	found := len(commandList) - 1
-	for idx := len(commandList) - 2; idx >= 0; idx-- {
-		if commandList[idx].GetTimestamp() < environments.CreatedAt {
+	// Why do I need such complicated logic here? The reason is trivial:
+	// one may use substitutions in a command like
+	// ah t -- `which python` script $(docker images -a -q)
+	// basically it manages these situations as precise as possible.
+
+	// Candidates here just means that several command may be executed
+	// simultaneously (e.g. with tmuxinator) so timestamp is not precise
+	// identifier here.
+
+	candidates, err := getCandidates(commandList)
+	if err != nil {
+		err = fmt.Errorf("Cannot detect proper command: %v", err)
+		return
+	}
+
+	if len(candidates) == 1 {
+		hash = candidates[0].GetTraceName()
+		return
+	}
+
+	suitable := getSuitable(candidates, cmd)
+	hash = (*suitable).GetTraceName()
+
+	return
+}
+
+func getCandidates(commands []historyentries.HistoryEntry) (candidates []historyentries.HistoryEntry, err error) {
+	start := -1
+	finish := -1
+
+	for idx := len(commands) - 1; idx >= 0; idx-- {
+		timestamp := commands[idx].GetTimestamp()
+		switch {
+		case timestamp < environments.CreatedAt-teeDelta:
+			break
+		case timestamp > environments.CreatedAt+teeDelta:
+			continue
+		default:
+			if finish == -1 {
+				finish = idx + 1
+			}
+			start = idx
+		}
+	}
+
+	if start == -1 || finish == -1 {
+		err = errors.New("Cannot find anything in the time range")
+	} else {
+		candidates = commands[start:finish]
+	}
+
+	return
+}
+
+func getSuitable(candidates []historyentries.HistoryEntry, cmd string) *historyentries.HistoryEntry {
+	chunks := strings.Split(cmd, " ")
+	maxHaveElements := -1
+	maxIdx := 0
+
+	for idx := 0; idx < len(candidates); idx++ {
+		haveElements := countElements(candidates[idx].GetCommand(), chunks)
+		if haveElements == len(chunks) {
+			maxIdx = idx
 			break
 		}
-		found = idx
+		if haveElements > maxHaveElements {
+			maxHaveElements = haveElements
+			maxIdx = idx
+		}
 	}
-	hash = commandList[found].GetTraceName()
+
+	return &candidates[maxIdx]
+}
+
+func countElements(cmd string, chunks []string) (count int) {
+	for idx := 0; idx < len(chunks); idx++ {
+		if strings.Contains(cmd, chunks[idx]) {
+			count++
+		}
+	}
 
 	return
 }
