@@ -71,7 +71,7 @@ Options:
     -v, --debug
        Shows a debug log of command execution.`
 
-const version = "ah 0.11"
+const version = "ah 0.12"
 
 var validateBookmarkName = utils.CreateRegexp(`^[A-Za-z_]\w*$`)
 
