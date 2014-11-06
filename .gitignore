@@ -30,3 +30,5 @@ _testmain.go
 build/*
 ah
 Godeps/_workspace/*
+
+.vagrant
