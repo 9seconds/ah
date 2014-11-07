@@ -34,6 +34,9 @@ Just a short reminder on possible subcommands:
     - rb - removes bookmarks.
     - gt - garbage collecting of the traces. Cleans old outputs.
     - gb - garbage collecting of the bookmarks. Swipes out old ones.
+	- ad - add command to the list of auto ah'ed
+	- ar - remove commands from the list of auto ah'ed
+	- al - list of commands which should be auto ah'ed
 
 Usage:
     ah [options] s [-z] [-g PATTERN] [<lastNcommands> | <startFromNCommand> <finishByMCommand>]
@@ -44,6 +47,8 @@ Usage:
     ah [options] lb
     ah [options] rb <bookmarkToRemove>...
     ah [options] (gt | gb) (--keepLatest <keepLatest> | --olderThan <olderThan> | --all)
+	ah [options] al
+	ah [options] (ad | al) <command>...
     ah (-h | --help)
     ah --version
 
