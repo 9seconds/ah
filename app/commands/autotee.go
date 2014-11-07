@@ -6,7 +6,10 @@ import (
 	"os"
 	"sort"
 
+	logrus "github.com/Sirupsen/logrus"
+
 	"github.com/9seconds/ah/app/environments"
+	"github.com/9seconds/ah/app/utils"
 )
 
 type autoCommand struct {
@@ -59,11 +62,19 @@ func AutoTeeAdd(commands []string, tty bool, interactive bool, env *environments
 
 	for _, cmd := range commands {
 		if strct, ok := autoCommands[cmd]; ok {
+			utils.Logger.WithFields(logrus.Fields{
+				"autoCommand": strct.String(),
+				"interactive": interactive,
+				"pseudoTty":   tty,
+			}).Info("Change command parameters")
+
 			strct.Interactive = interactive
 			strct.PseudoTTY = tty
 		} else {
 			auto := autoCommand{Interactive: interactive, PseudoTTY: tty, Command: cmd}
 			autoCommands[cmd] = &auto
+
+			utils.Logger.WithField("autoCommand", (&auto).String()).Info("Add new command")
 		}
 	}
 
@@ -76,6 +87,8 @@ func AutoTeeRemove(commands []string, env *environments.Environment) {
 	autoCommands := getAutoCommands(env)
 
 	for _, cmd := range commands {
+		utils.Logger.WithField("command", cmd).Info("Remove command from the list")
+
 		delete(autoCommands, cmd)
 	}
 
@@ -85,7 +98,7 @@ func AutoTeeRemove(commands []string, env *environments.Environment) {
 func saveAutoTee(commands map[string]*autoCommand, env *environments.Environment) {
 	file, err := os.Create(env.GetAutoCommandFileName())
 	if err != nil {
-		panic(err)
+		utils.Logger.Panic(err)
 	}
 	defer file.Close()
 
@@ -95,10 +108,12 @@ func saveAutoTee(commands map[string]*autoCommand, env *environments.Environment
 func getAutoCommands(env *environments.Environment) (commands map[string]*autoCommand) {
 	file, err := os.Open(env.GetAutoCommandFileName())
 	if err != nil {
+		utils.Logger.WithField("error", err).Warn("Cannot open auto tee commands file")
 		commands = make(map[string]*autoCommand)
 	} else {
 		err = gob.NewDecoder(file).Decode(&commands)
 		if err != nil {
+			utils.Logger.WithField("error", err).Warn("Cannot decode GOB correctly")
 			commands = nil
 		}
 		file.Close()
