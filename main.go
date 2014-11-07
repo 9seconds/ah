@@ -184,6 +184,9 @@ func main() {
 	case arguments["ad"].(bool):
 		utils.Logger.Info("Execute command 'ad'")
 		exec = executeAd
+	case arguments["ar"].(bool):
+		utils.Logger.Info("Execute command 'ar'")
+		exec = executeAr
 	default:
 		utils.Logger.Panic("Unknown command. Please be more precise")
 		return
@@ -365,4 +368,14 @@ func executeAd(arguments map[string]interface{}, env *environments.Environment) 
 
 func executeAl(_ map[string]interface{}, env *environments.Environment) {
 	commands.AutoTeeList(env)
+}
+
+func executeAr(arguments map[string]interface{}, env *environments.Environment) {
+	cmds := arguments["<command>"].([]string)
+
+	utils.Logger.WithFields(logrus.Fields{
+		"commands": cmds,
+	}).Info("Arguments")
+
+	commands.AutoTeeRemove(cmds, env)
 }

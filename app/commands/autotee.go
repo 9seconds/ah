@@ -29,11 +29,19 @@ func (ac *autoCommand) String() string {
 	return fmt.Sprintf("%d %d %s", interactive, pseudoTty, ac.Command)
 }
 
+// AutoTeeList returns a formatted list of the commands which should be
+// executed with tee automatically. Basically output looks like
+//
+// 1 0 find
+// 0 0 ls
+//
+// where first column is interactive mode (-x) and second is pseudoTty (-y)
+// 1 means true, 0 means false.
 func AutoTeeList(env *environments.Environment) {
 	autoCommands := getAutoCommands(env)
 
 	keys := make([]string, 0, len(autoCommands))
-	for cmd, _ := range autoCommands {
+	for cmd := range autoCommands {
 		keys = append(keys, cmd)
 	}
 	sort.Strings(keys)
@@ -44,26 +52,44 @@ func AutoTeeList(env *environments.Environment) {
 	}
 }
 
+// AutoTeeAdd adds a commands to the list of commands which should be executed
+// automatically by tee.
 func AutoTeeAdd(commands []string, tty bool, interactive bool, env *environments.Environment) {
-	commandsAlreadyHave := getAutoCommands(env)
+	autoCommands := getAutoCommands(env)
+
 	for _, cmd := range commands {
-		if strct, ok := commandsAlreadyHave[cmd]; ok {
+		if strct, ok := autoCommands[cmd]; ok {
 			strct.Interactive = interactive
 			strct.PseudoTTY = tty
 		} else {
 			auto := autoCommand{Interactive: interactive, PseudoTTY: tty, Command: cmd}
-			commandsAlreadyHave[cmd] = &auto
+			autoCommands[cmd] = &auto
 		}
 	}
 
+	saveAutoTee(autoCommands, env)
+}
+
+// AutoTeeRemove removes a commands from the list of commands which should be executed
+// automatically by tee.
+func AutoTeeRemove(commands []string, env *environments.Environment) {
+	autoCommands := getAutoCommands(env)
+
+	for _, cmd := range commands {
+		delete(autoCommands, cmd)
+	}
+
+	saveAutoTee(autoCommands, env)
+}
+
+func saveAutoTee(commands map[string]*autoCommand, env *environments.Environment) {
 	file, err := os.Create(env.GetAutoCommandFileName())
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	encoder := gob.NewEncoder(file)
-	encoder.Encode(commandsAlreadyHave)
+	gob.NewEncoder(file).Encode(commands)
 }
 
 func getAutoCommands(env *environments.Environment) (commands map[string]*autoCommand) {
@@ -71,8 +97,7 @@ func getAutoCommands(env *environments.Environment) (commands map[string]*autoCo
 	if err != nil {
 		commands = make(map[string]*autoCommand)
 	} else {
-		decoder := gob.NewDecoder(file)
-		err = decoder.Decode(&commands)
+		err = gob.NewDecoder(file).Decode(&commands)
 		if err != nil {
 			commands = nil
 		}

@@ -208,6 +208,7 @@ func (e *Environment) GetBookmarkFilenames() ([]os.FileInfo, error) {
 	return e.getFilenames(e.GetBookmarksDir())
 }
 
+// GetAutoCommandFileName returns a full path to the file with auto tee commands.
 func (e *Environment) GetAutoCommandFileName() string {
 	return filepath.Join(e.appDir, defaultAutoCommandsFileName)
 }
