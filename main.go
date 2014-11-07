@@ -47,9 +47,9 @@ Usage:
     ah [options] lb
     ah [options] rb <bookmarkToRemove>...
     ah [options] (gt | gb) (--keepLatest <keepLatest> | --olderThan <olderThan> | --all)
-	ah [options] al
-	ah [options] ad [-x] [-y] <command>...
-	ah [options] ar <command>...
+    ah [options] al
+    ah [options] ad [-x] [-y] <command>...
+    ah [options] ar <command>...
     ah (-h | --help)
     ah --version
 
@@ -178,6 +178,12 @@ func main() {
 	case arguments["gt"].(bool) || arguments["gb"].(bool):
 		utils.Logger.Info("Execute command 'gc'")
 		exec = executeGC
+	case arguments["al"].(bool):
+		utils.Logger.Info("Execute command 'al'")
+		exec = executeAl
+	case arguments["ad"].(bool):
+		utils.Logger.Info("Execute command 'ad'")
+		exec = executeAd
 	default:
 		utils.Logger.Panic("Unknown command. Please be more precise")
 		return
@@ -341,4 +347,22 @@ func executeRemoveBookmarks(arguments map[string]interface{}, env *environments.
 	}
 
 	commands.RemoveBookmarks(bookmarks, env)
+}
+
+func executeAd(arguments map[string]interface{}, env *environments.Environment) {
+	cmds := arguments["<command>"].([]string)
+	tty := arguments["--tty"].(bool)
+	interactive := arguments["--run-in-real-shell"].(bool)
+
+	utils.Logger.WithFields(logrus.Fields{
+		"commands":    cmds,
+		"tty":         tty,
+		"interactive": interactive,
+	}).Info("Arguments")
+
+	commands.AutoTeeAdd(cmds, tty, interactive, env)
+}
+
+func executeAl(_ map[string]interface{}, env *environments.Environment) {
+	commands.AutoTeeList(env)
 }

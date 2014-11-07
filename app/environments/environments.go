@@ -20,8 +20,9 @@ const (
 	tracesDir     = "traces"
 	bookmarksDir  = "bookmarks"
 
-	defaultZshHistFile  = ".zsh_history"
-	defaultBashHistFile = ".bash_history"
+	defaultZshHistFile          = ".zsh_history"
+	defaultBashHistFile         = ".bash_history"
+	defaultAutoCommandsFileName = "autocommands.gob"
 )
 
 // ShellType sets a type of the shell
@@ -205,6 +206,10 @@ func (e *Environment) GetTraceFilenames() ([]os.FileInfo, error) {
 // GetBookmarkFilenames returns a list of bookmarks for traces.
 func (e *Environment) GetBookmarkFilenames() ([]os.FileInfo, error) {
 	return e.getFilenames(e.GetBookmarksDir())
+}
+
+func (e *Environment) GetAutoCommandFileName() string {
+	return filepath.Join(e.appDir, defaultAutoCommandsFileName)
 }
 
 func (e *Environment) getFilenames(directory string) ([]os.FileInfo, error) {
