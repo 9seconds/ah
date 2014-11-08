@@ -26,7 +26,7 @@ func (ac *autoCommand) String() string {
 }
 
 func (ac *autoCommand) Args() string {
-	buffer := new(bytes.Buffer)
+	buffer := bytes.NewBufferString(" ")
 
 	if ac.PseudoTTY {
 		buffer.WriteString("-y ")
@@ -50,7 +50,7 @@ func AutoTeeCreate(command string, env *environments.Environment) {
 	if auto, ok := autoCommands[key]; !ok || strings.Contains(command, ";") {
 		os.Stdout.WriteString(command)
 	} else {
-		fmt.Println(`%s t %s -- "%s"`, os.Args[0], auto.Args(), command)
+		fmt.Printf(`%s t%s-- "%s"`, os.Args[0], auto.Args(), command)
 	}
 }
 
