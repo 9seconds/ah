@@ -1,6 +1,9 @@
 #!/usr/bin/env zsh
 # vim: set noexpandtab shiftwidth=4:
 
+
+export AUTO_AH=1
+
 __auto_ah() {
 	BUFFER=$(ah at "${BUFFER}")
 	zle accept-line
