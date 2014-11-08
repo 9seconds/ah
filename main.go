@@ -34,9 +34,10 @@ Just a short reminder on possible subcommands:
     - rb - removes bookmarks.
     - gt - garbage collecting of the traces. Cleans old outputs.
     - gb - garbage collecting of the bookmarks. Swipes out old ones.
-	- ad - add command to the list of auto ah'ed
-	- ar - remove commands from the list of auto ah'ed
-	- al - list of commands which should be auto ah'ed
+    - ad - add command to the list of auto ah'ed
+    - ar - remove commands from the list of auto ah'ed.
+    - al - list of commands which should be auto ah'ed.
+    - at - creates a command to execute using auto tee if possible.
 
 Usage:
     ah [options] s [-z] [-g PATTERN] [<lastNcommands> | <startFromNCommand> <finishByMCommand>]
@@ -50,6 +51,7 @@ Usage:
     ah [options] al
     ah [options] ad [-x] [-y] <command>...
     ah [options] ar <command>...
+    ah [options] at <commandToExecute>
     ah (-h | --help)
     ah --version
 
@@ -187,6 +189,9 @@ func main() {
 	case arguments["ar"].(bool):
 		utils.Logger.Info("Execute command 'ar'")
 		exec = executeAr
+	case arguments["at"].(bool):
+		utils.Logger.Info("Execute command 'at'")
+		exec = executeAt
 	default:
 		utils.Logger.Panic("Unknown command. Please be more precise")
 		return
@@ -378,4 +383,14 @@ func executeAr(arguments map[string]interface{}, env *environments.Environment) 
 	}).Info("Arguments")
 
 	commands.AutoTeeRemove(cmds, env)
+}
+
+func executeAt(arguments map[string]interface{}, env *environments.Environment) {
+	cmd := arguments["<commandToExecute>"].(string)
+
+	utils.Logger.WithFields(logrus.Fields{
+		"cmd": cmd,
+	}).Info("Arguments")
+
+	commands.AutoTeeCreate(cmd, env)
 }

@@ -1,10 +1,12 @@
 package commands
 
 import (
+	"bytes"
 	"encoding/gob"
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 
 	logrus "github.com/Sirupsen/logrus"
 
@@ -19,24 +21,45 @@ type autoCommand struct {
 }
 
 func (ac *autoCommand) String() string {
-	interactive := 0
-	pseudoTty := 0
+	return fmt.Sprintf("%-20s [interactive=%-5t, pseudoTty=%-5t]",
+		ac.Command, ac.Interactive, ac.PseudoTTY)
+}
 
-	if ac.Interactive {
-		interactive = 1
-	}
+func (ac *autoCommand) Args() string {
+	buffer := new(bytes.Buffer)
+
 	if ac.PseudoTTY {
-		pseudoTty = 1
+		buffer.WriteString("-y ")
+	}
+	if ac.Interactive {
+		buffer.WriteString("-x ")
 	}
 
-	return fmt.Sprintf("%d %d %s", interactive, pseudoTty, ac.Command)
+	return buffer.String()
+}
+
+// AutoTeeCreate creates a command to execute regarding to the auto tee
+// information.
+func AutoTeeCreate(command string, env *environments.Environment) {
+	defer os.Stdout.WriteString("\n")
+
+	command = strings.TrimSpace(command)
+	key := strings.SplitN(command, " ", 2)[0]
+	autoCommands := getAutoCommands(env)
+
+	if auto, ok := autoCommands[key]; !ok || strings.Contains(command, ";") {
+		os.Stdout.WriteString(command)
+	} else {
+		fmt.Println(`%s t %s -- "%s"`, os.Args[0], auto.Args(), command)
+	}
 }
 
 // AutoTeeList returns a formatted list of the commands which should be
 // executed with tee automatically. Basically output looks like
 //
-// 1 0 find
-// 0 0 ls
+// ls                   [interactive=false, pseudoTty=false]
+// python               [interactive=false, pseudoTty=false]
+// ssh                  [interactive=false, pseudoTty=false]/
 //
 // where first column is interactive mode (-x) and second is pseudoTty (-y)
 // 1 means true, 0 means false.
