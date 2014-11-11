@@ -117,7 +117,9 @@ func getCandidates(commands []historyentries.HistoryEntry) (candidates []history
 	}
 
 	if start == -1 || finish == -1 {
-		err = errors.New("Cannot find anything in the time range")
+		utils.Logger.Warn("Cannot find anything on the time range " +
+			"so assume that deduplication works. Take the latest.")
+		candidates = commands[len(commands)-1:]
 	} else {
 		candidates = commands[start:finish]
 	}
