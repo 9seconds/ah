@@ -14,7 +14,7 @@ FREEBSD_ARCH    := amd64 386 arm
 DOCKER_PROG     := docker
 DOCKER_GOPATH   := /go
 DOCKER_WORKDIR  := $(DOCKER_GOPATH)/src/$(GOLANG_AH)
-DOCKER_IMAGE    := golang:1.3.3-cross
+DOCKER_IMAGE    := golang:1.4-cross
 
 # ----------------------------------------------------------------------------
 
