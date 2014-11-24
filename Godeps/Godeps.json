@@ -4,13 +4,13 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.6.0",
-			"Rev": "6ebb4e7b3c24b9fef150d7693e728cb1ebadf1f5"
+			"Comment": "v0.6.1-1-gf9e0c0d",
+			"Rev": "f9e0c0dd4aec8f179cb6dc4f2aea811f36b58f54"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/term",
-			"Comment": "v1.3.0-346-gfa59fe9",
-			"Rev": "fa59fe997c83e2a6968f8c03c64352acd71c26da"
+			"Comment": "v1.3.0-676-gc59b308",
+			"Rev": "c59b308b6b2fc8112a93d64f4922b0ece01a4e6a"
 		},
 		{
 			"ImportPath": "github.com/docopt/docopt-go",
@@ -23,8 +23,8 @@
 		},
 		{
 			"ImportPath": "github.com/kr/pty",
-			"Comment": "release.r56-19-g67e2db2",
-			"Rev": "67e2db24c831afa6c64fc17b4a143390674365ef"
+			"Comment": "release.r56-21-g53dd597",
+			"Rev": "53dd597300005d500d7136de51a5a2b8c3ab8f94"
 		},
 		{
 			"ImportPath": "github.com/mitchellh/go-homedir",
