@@ -172,3 +172,82 @@ Garbage collecting
 
 If you do not need a lot of traces or bookmarks, you may get rid of them using
 `gt` (garbage collect traces) and `gb` (garbage collect bookmarks) commands.
+
+
+Automatic execution
+-------------------
+
+_(Only for zsh)_
+
+Ah allows user to set it for automatic tracing outputs. To do that please do
+the following:
+
+1. You have to download script to [source](https://raw.githubusercontent.com/9seconds/ah/master/sourceit/zsh.sh)
+   and place it wherever you want. Let's say, I put it to `~/.auto_ah.sh`
+2. Add following line to your `~/.zshrc`: `source ~/.zshrc` and please be noticed
+   that `ah` should be in your `PATH`. If `which ah` works, then you're done.
+   Otherwise just add it to the path.
+
+Basically, ah will track all your executions automatically. But since it is
+dangerous to execute automatically everything around, there is a whitelist. ah
+has 3 commands you should be interested in:
+
+1. `al` shows the list of all whitelist command ah will automatically apply to.
+2. `ar` removes command from the whitelist and ah won't execute it automatically.
+3. `ad` add a command to the whitelist.
+
+Let's check my current setup.
+
+```bash
+$ ah al
+ag                   [interactive=false, pseudoTty=false]
+aptg                 [interactive=true , pseudoTty=false]
+awk                  [interactive=false, pseudoTty=false]
+docker               [interactive=false, pseudoTty=true ]
+docker_clean         [interactive=true , pseudoTty=false]
+docker_stop          [interactive=true , pseudoTty=false]
+docker_update        [interactive=true , pseudoTty=false]
+find                 [interactive=false, pseudoTty=false]
+grep                 [interactive=false, pseudoTty=false]
+ipython              [interactive=true , pseudoTty=true ]
+make                 [interactive=false, pseudoTty=false]
+python               [interactive=false, pseudoTty=false]
+sed                  [interactive=false, pseudoTty=false]
+ssh                  [interactive=false, pseudoTty=false]
+vagrant              [interactive=true , pseudoTty=true ]
+```
+
+As you can see, I have a mixed setup. I trace an output of `ag` or `find` command
+and do it in non-interactive (interactive means `zsh -i -c`) way and do not
+allocate pseudo TTY for them. There are several aliases (`docker_update` or `aptg`)
+and to execute them I use interactive mode. And I use pseudo TTY for `ipython`.
+
+Now let's add `go` for the list.
+
+```bash
+$ ah ad go
+```
+
+So simple. But how can I set interactiveness or pseudo TTYs? Pretty simple and
+obvious (remember `t` command?)
+
+```bash
+$ ah ad -x go
+```
+
+for interactiveness. And for pseudo TTY
+
+```bash
+$ ah ad -y go
+```
+
+If you decide to use another set of options, just execute `ah ad` with another
+set of options, it will override previous setting.
+
+To remove command just use `ar`
+
+```bash
+$ ah ar go
+```
+
+No need to resource or do something more.
