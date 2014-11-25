@@ -25,13 +25,13 @@ func (ac *autoCommand) String() string {
 		ac.Command, ac.Interactive, ac.PseudoTTY)
 }
 
-func (ac *autoCommand) Args() string {
+func (ac *autoCommand) Args(piped bool) string {
 	buffer := bytes.NewBufferString(" ")
 
 	if ac.PseudoTTY {
 		buffer.WriteString("-y ")
 	}
-	if ac.Interactive {
+	if ac.Interactive || piped {
 		buffer.WriteString("-x ")
 	}
 
@@ -50,7 +50,8 @@ func AutoTeeCreate(command string, env *environments.Environment) {
 	if auto, ok := autoCommands[key]; !ok || strings.Contains(command, ";") {
 		os.Stdout.WriteString(command)
 	} else {
-		fmt.Printf(`%s t%s-- "%s"`, os.Args[0], auto.Args(), command)
+		piped := strings.Contains(command, "|")
+		fmt.Printf(`%s t%s-- "%s"`, os.Args[0], auto.Args(piped), command)
 	}
 }
 
