@@ -6,7 +6,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   ENV['VAGRANT_DEFAULT_PROVIDER'] ||= 'docker'
 
-  ["bash", "zsh", "fish"].each do |shell|
+  ["bash", "zsh"].each do |shell|
     config.vm.define shell do |vm|
       vm.ssh.username = "root"
       if Gem.win_platform?
