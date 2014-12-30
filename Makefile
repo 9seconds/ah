@@ -48,7 +48,7 @@ godep:
 	go get github.com/tools/godep || true
 
 govet:
-	go get code.google.com/p/go.tools/cmd/vet || true
+	go get golang.org/x/tools/cmd/vet || true
 
 golint:
 	go get github.com/golang/lint/golint || true
