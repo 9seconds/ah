@@ -25,7 +25,9 @@ const (
 	defaultBashHistFileName     = ".bash_history"
 	defaultAutoCommandsFileName = "autocommands.gob"
 
+	// ShellBash defines code name of the Bash shell
 	ShellBash = "bash"
+	// ShellZsh defines code name of the Z Shell
 	ShellZsh  = "zsh"
 )
 
@@ -34,9 +36,12 @@ var (
 
 	defaultTmpDir = os.TempDir()
 
+	// CreatedAt defines the timestamp when the launched
 	CreatedAt = time.Now().Unix()
 )
 
+// Environment defines common structure which carries all information
+// about environment where ah is executed.
 type Environment struct {
 	Shell          string `yaml:"shell"`
 	HistFile       string `yaml:"histfile"`
@@ -61,14 +66,17 @@ func init() {
 	homeDir = currentHomeDir
 }
 
+// GetTraceFileName returns filename of the trace based on the given hash.
 func (e *Environment) GetTraceFileName(hash string) string {
 	return filepath.Join(e.TracesDir, hash)
 }
 
+// GetBookmarkFileName returns filename of the bookmark based on the given name.
 func (e *Environment) GetBookmarkFileName(name string) string {
 	return filepath.Join(e.BookmarksDir, name)
 }
 
+// GetHistFileName returns filename of the history file or error if something goes wrong (e.g unsupported shell).
 func (e *Environment) GetHistFileName() (fileName string, err error) {
 	fileName = e.HistFile
 
@@ -86,10 +94,12 @@ func (e *Environment) GetHistFileName() (fileName string, err error) {
 	return
 }
 
+// FormatTimeStamp is just a small wrapper around FormatTime method.
 func (e *Environment) FormatTimeStamp(timestamp int64) string {
 	return e.FormatTime(utils.ConvertTimestamp(timestamp))
 }
 
+// FormatTime formats a given time structure accroding to the settings.
 func (e *Environment) FormatTime(timestamp *time.Time) (formatted string) {
 	if e.HistTimeFormat != "" {
 		formatted = strftime.Format(e.HistTimeFormat, *timestamp)
@@ -98,10 +108,12 @@ func (e *Environment) FormatTime(timestamp *time.Time) (formatted string) {
 	return
 }
 
+// GetTracesFileInfos returns file metadata structures on all traces.
 func (e *Environment) GetTracesFileInfos() ([]os.FileInfo, error) {
 	return e.getFileNames(e.TracesDir)
 }
 
+// GetBookmarksFileInfos returns file metadata structures on all bookmarks.
 func (e *Environment) GetBookmarksFileInfos() ([]os.FileInfo, error) {
 	return e.getFileNames(e.BookmarksDir)
 }
@@ -123,6 +135,7 @@ func (e *Environment) getFileNames(directory string) ([]os.FileInfo, error) {
 	return fileInfos, nil
 }
 
+// ReadFromConfig reads environment from config file.
 func (e *Environment) ReadFromConfig() (configEnv *Environment, err error) {
 	configEnv = new(Environment)
 
@@ -148,6 +161,7 @@ func (e *Environment) String() string {
 		e.AutoCommandsFileName)
 }
 
+// MakeDefaultEnvironment creates environment with default settings.
 func MakeDefaultEnvironment() (env *Environment) {
 	env = new(Environment)
 
@@ -167,6 +181,7 @@ func MakeDefaultEnvironment() (env *Environment) {
 	return
 }
 
+// MergeEnvironments combines several environments into one.
 func MergeEnvironments(envs ...*Environment) (result *Environment) {
 	result = new(Environment)
 
