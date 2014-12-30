@@ -13,7 +13,7 @@ import (
 
 // ListBookmarks prints the list of bookmarks with their content
 func ListBookmarks(env *environments.Environment) {
-	bookmarksFileInfos, err := env.GetBookmarkFilenames()
+	bookmarksFileInfos, err := env.GetBookmarksFileInfos()
 	if err != nil {
 		utils.Logger.Panic(err)
 	}

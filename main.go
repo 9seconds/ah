@@ -96,6 +96,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	utils.Logger.WithField("arguments", arguments).Info("Parsed arguments")
 
 	if arguments["--debug"].(bool) {
 		utils.EnableLogging()
@@ -103,55 +104,56 @@ func main() {
 		utils.DisableLogging()
 	}
 
-	env := new(environments.Environment)
+	defaultEnv := environments.MakeDefaultEnvironment()
+	cmdLineEnv := environments.MakeDefaultEnvironment()
+	configEnv, err := defaultEnv.ReadFromConfig()
+	if err != nil {
+		utils.Logger.WithField("error", err).Warn("Cannot read config file")
+	}
+
 	argShell := arguments["--shell"]
-	if argShell == nil {
-		env.DiscoverShell()
-	} else {
-		env.SetShell(argShell.(string))
+	if argShell != nil {
+		cmdLineEnv.Shell = argShell.(string)
 	}
 
 	argHistFile := arguments["--histfile"]
-	if argHistFile == nil {
-		env.DiscoverHistFile()
-	} else {
-		env.SetHistFile(argHistFile.(string))
+	if argHistFile != nil {
+		cmdLineEnv.HistFile = argHistFile.(string)
 	}
 
 	argHistTimeFormat := arguments["--histtimeformat"]
-	if argHistTimeFormat == nil {
-		env.DiscoverHistTimeFormat()
-	} else {
-		env.SetHistTimeFormat(argHistTimeFormat.(string))
+	if argHistTimeFormat != nil {
+		cmdLineEnv.HistTimeFormat = argHistTimeFormat.(string)
 	}
 
 	argAppDir := arguments["--appdir"]
-	if argAppDir == nil {
-		env.DiscoverAppDir()
-	} else {
-		env.SetAppDir(argAppDir.(string))
+	if argAppDir != nil {
+		cmdLineEnv.AppDir = argAppDir.(string)
 	}
 
 	argTmpDir := arguments["--tmpdir"]
-	if argTmpDir == nil {
-		env.DiscoverTmpDir()
-	} else {
-		env.SetTmpDir(argTmpDir.(string))
+	if argTmpDir != nil {
+		cmdLineEnv.TmpDir = argTmpDir.(string)
 	}
 
-	utils.Logger.WithFields(logrus.Fields{
-		"arguments":   arguments,
-		"environment": env,
-	}).Debug("Ready to start")
 
 	utils.Logger.WithFields(logrus.Fields{
-		"error": os.MkdirAll(env.GetTracesDir(), 0777),
+		"default":   defaultEnv,
+		"config": configEnv,
+		"cmdLineEnv": cmdLineEnv,
+	}).Debug("Environments")
+
+	env := environments.MergeEnvironments(defaultEnv, configEnv, cmdLineEnv)
+	utils.Logger.WithField("result env", env).Debug("Ready to start")
+
+	utils.Logger.WithFields(logrus.Fields{
+		"error": os.MkdirAll(env.TracesDir, 0777),
 	}).Info("Create traces dir")
 	utils.Logger.WithFields(logrus.Fields{
-		"error": os.MkdirAll(env.GetBookmarksDir(), 0777),
+		"error": os.MkdirAll(env.BookmarksDir, 0777),
 	}).Info("Create bookmarks dir")
 	utils.Logger.WithFields(logrus.Fields{
-		"error": os.MkdirAll(env.GetTmpDir(), 0777),
+		"error": os.MkdirAll(env.TmpDir, 0777),
 	}).Info("Create create temporary dir")
 
 	var exec executor

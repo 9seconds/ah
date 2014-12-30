@@ -63,10 +63,10 @@ func (fis fileInfoSorter) Tail(first int) []os.FileInfo {
 
 // GC implements g (garbage collecting) command.
 func GC(gcType GcType, gcDir GcDir, param int, env *environments.Environment) {
-	listFunction := env.GetTraceFilenames
+	listFunction := env.GetTracesFileInfos
 	fileNameFunction := env.GetTraceFileName
 	if gcDir == GcBookmarksDir {
-		listFunction = env.GetBookmarkFilenames
+		listFunction = env.GetBookmarksFileInfos
 		fileNameFunction = env.GetBookmarkFileName
 	}
 

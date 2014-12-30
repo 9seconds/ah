@@ -21,7 +21,7 @@ func ExecuteCommandNumber(number int, interactive bool, pseudoTTY bool, env *env
 	}
 	command := commands.Result().(historyentries.HistoryEntry)
 
-	execute(command.GetCommand(), env.GetShell(), interactive, pseudoTTY)
+	execute(command.GetCommand(), env.Shell, interactive, pseudoTTY)
 }
 
 // ExecuteBookmark executes command by its bookmark name.
@@ -31,10 +31,10 @@ func ExecuteBookmark(name string, interactive bool, pseudoTTY bool, env *environ
 		utils.Logger.Panic("Unknown bookmark")
 	}
 
-	execute(string(content), env.GetShell(), interactive, pseudoTTY)
+	execute(string(content), env.Shell, interactive, pseudoTTY)
 }
 
-func execute(command string, shell environments.ShellType, interactive bool, pseudoTTY bool) {
+func execute(command string, shell string, interactive bool, pseudoTTY bool) {
 	err := utils.Exec(command,
 		string(shell), interactive, pseudoTTY,
 		os.Stdin, os.Stdout, os.Stderr)

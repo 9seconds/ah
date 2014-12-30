@@ -2,7 +2,6 @@ package historyentries
 
 import (
 	"bufio"
-	"errors"
 
 	"github.com/9seconds/ah/app/environments"
 	"github.com/9seconds/ah/app/utils"
@@ -23,15 +22,16 @@ const (
 // varargs is the auxiliary list of numbers which makes sense in the context of GetCommandsMode setting
 // only.
 func GetCommands(mode GetCommandsMode, filter *utils.Regexp, env *environments.Environment, varargs ...int) (commands Keeper, err error) {
-	if !env.OK() {
-		return nil, errors.New("Environment is not prepared")
-	}
-
 	keeper := getKeeper(mode, varargs...)
 	resultChan, consumeChan := processHistories(env)
 	parser := getParser(env)
 
-	file := utils.Open(env.GetHistFile())
+	histFileName, err := env.GetHistFileName()
+	if err != nil {
+		return
+	}
+
+	file := utils.Open(histFileName)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 

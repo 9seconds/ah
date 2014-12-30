@@ -120,7 +120,7 @@ func AutoTeeRemove(commands []string, env *environments.Environment) {
 }
 
 func saveAutoTee(commands map[string]*autoCommand, env *environments.Environment) {
-	file, err := os.Create(env.GetAutoCommandFileName())
+	file, err := os.Create(env.AutoCommandsFileName)
 	if err != nil {
 		utils.Logger.Panic(err)
 	}
@@ -130,7 +130,7 @@ func saveAutoTee(commands map[string]*autoCommand, env *environments.Environment
 }
 
 func getAutoCommands(env *environments.Environment) (commands map[string]*autoCommand) {
-	file, err := os.Open(env.GetAutoCommandFileName())
+	file, err := os.Open(env.AutoCommandsFileName)
 	if err != nil {
 		utils.Logger.WithField("error", err).Warn("Cannot open auto tee commands file")
 		commands = make(map[string]*autoCommand)

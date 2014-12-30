@@ -20,7 +20,7 @@ const teeDelta = 1
 
 // Tee implements t (trace, tee) command.
 func Tee(input string, interactive bool, pseudoTTY bool, env *environments.Environment) {
-	output, err := ioutil.TempFile(env.GetTmpDir(), "ah")
+	output, err := ioutil.TempFile(env.TmpDir, "ah")
 	if err != nil {
 		utils.Logger.Panic("Cannot create temporary file")
 	}
@@ -54,7 +54,7 @@ func Tee(input string, interactive bool, pseudoTTY bool, env *environments.Envir
 	}()
 
 	commandError = utils.Exec(input,
-		string(env.GetShell()), interactive, pseudoTTY,
+		string(env.Shell), interactive, pseudoTTY,
 		os.Stdin, combinedStdout, combinedStderr)
 }
 

@@ -14,7 +14,7 @@ func processHistories(env *environments.Environment) (resultChan chan bool, cons
 	go func() {
 		entries := make(map[string]bool)
 
-		files, err := env.GetTraceFilenames()
+		files, err := env.GetTracesFileInfos()
 		if err != nil {
 			utils.Logger.WithFields(logrus.Fields{
 				"error": err,

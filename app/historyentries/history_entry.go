@@ -45,7 +45,7 @@ func (he HistoryEntry) GetTime() *time.Time {
 }
 
 // GetFormattedTime returns formatted time stamp of the history entry.
-func (he HistoryEntry) GetFormattedTime(env *environments.Environment) (string, error) {
+func (he HistoryEntry) GetFormattedTime(env *environments.Environment) string {
 	return env.FormatTimeStamp(he.timestamp)
 }
 
@@ -64,7 +64,7 @@ func (he HistoryEntry) String() string {
 // ToString converts history entry to the string representation according to the environment setting.
 func (he HistoryEntry) ToString(env *environments.Environment) string {
 	timestamp := ""
-	if formattedTimestamp, err := env.FormatTimeStamp(he.timestamp); err == nil {
+	if formattedTimestamp := env.FormatTimeStamp(he.timestamp); formattedTimestamp != "" {
 		timestamp = "  (" + formattedTimestamp + ")"
 	}
 
