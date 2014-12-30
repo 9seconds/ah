@@ -56,6 +56,20 @@ $ make
 $ mv ah /wherever/you/want
 ```
 
+Also, if you use [HomeBrew](http://brew.sh)/[LinuxBrew](http://brew.sh/linuxbrew), you may want to check the formula:
+
+```bash
+$ brew tap 9seconds/homebrew-ah
+$ brew install ah
+```
+
+Update with Brews are trivial
+
+```bash
+$ brew update
+$ brew reinstall ah
+```
+
 
 Tracing an output
 -----------------
