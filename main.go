@@ -136,10 +136,9 @@ func main() {
 		cmdLineEnv.TmpDir = argTmpDir.(string)
 	}
 
-
 	utils.Logger.WithFields(logrus.Fields{
-		"default":   defaultEnv,
-		"config": configEnv,
+		"default":    defaultEnv,
+		"config":     configEnv,
 		"cmdLineEnv": cmdLineEnv,
 	}).Debug("Environments")
 
