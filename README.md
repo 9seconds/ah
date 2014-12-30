@@ -265,3 +265,29 @@ $ ah ar go
 ```
 
 No need to resource or do something more.
+
+
+Configuration
+-------------
+
+ah supports configuration with YAML file. It should be placed in `~/.ah/config.yaml`.
+Here is the full example (everything may be omit)
+
+```
+shell: zsh
+histfile: /home/9seconds/.zsh_history
+histtimeformat: "%d.%m.%y %H:%M:%S"
+
+tmpdir: /tmp
+```
+
+That simple, yes. It is useful, if you bring a lot of commandline options in aliases
+or if you want to execute ah automatically.
+
+Here is the sequence of argument overriding:
+
+1. Default options
+2. Config options
+3. Commandline options
+
+So commandline options overrides config.
