@@ -273,7 +273,7 @@ Configuration
 ah supports configuration with YAML file. It should be placed in `~/.ah/config.yaml`.
 Here is the full example (everything may be omit)
 
-```
+```yaml
 shell: zsh
 histfile: /home/9seconds/.zsh_history
 histtimeformat: "%d.%m.%y %H:%M:%S"
