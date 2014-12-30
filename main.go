@@ -96,13 +96,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	utils.Logger.WithField("arguments", arguments).Info("Parsed arguments")
 
 	if arguments["--debug"].(bool) {
 		utils.EnableLogging()
 	} else {
 		utils.DisableLogging()
 	}
+	utils.Logger.WithField("arguments", arguments).Info("Parsed arguments")
 
 	defaultEnv := environments.MakeDefaultEnvironment()
 	cmdLineEnv := environments.MakeDefaultEnvironment()

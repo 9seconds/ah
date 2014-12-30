@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"time"
 
@@ -136,7 +137,7 @@ func (e *Environment) ReadFromConfig() (configEnv *Environment, err error) {
 func MakeDefaultEnvironment() (env *Environment) {
 	env = new(Environment)
 
-	env.Shell = os.Getenv("SHELL")
+	env.Shell = path.Base(os.Getenv("SHELL"))
 	env.HistFile = os.Getenv("HISTFILE")
 	env.HistTimeFormat = os.Getenv("HISTTIMEFORMAT")
 
