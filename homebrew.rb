@@ -2,8 +2,8 @@ require "formula"
 
 class Ah < Formula
   homepage "https://github.com/9seconds/ah"
-  url "https://github.com/9seconds/ah.git", :tag => "0.13.1"
-  version "0.13.1"
+  url "https://github.com/9seconds/ah.git", :tag => "0.14"
+  version "0.14"
   sha1 ""
 
   bottle do
