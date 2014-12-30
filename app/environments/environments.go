@@ -134,6 +134,20 @@ func (e *Environment) ReadFromConfig() (configEnv *Environment, err error) {
 	return
 }
 
+func (e *Environment) String() string {
+	return fmt.Sprintf("<Environment(shell='%s', histFile='%s', histTimeFormat='%s', homeDir='%s', appDir='%s', tracesDir='%s', bookmarksDir='%s', tmpDir='%s', configFileName='%s', autoCommandsFileName='%s')>",
+		e.Shell,
+		e.HistFile,
+		e.HistTimeFormat,
+		e.HomeDir,
+		e.AppDir,
+		e.TracesDir,
+		e.BookmarksDir,
+		e.TmpDir,
+		e.ConfigFileName,
+		e.AutoCommandsFileName)
+}
+
 func MakeDefaultEnvironment() (env *Environment) {
 	env = new(Environment)
 
