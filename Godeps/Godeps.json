@@ -4,18 +4,18 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.6.1-1-gf9e0c0d",
-			"Rev": "f9e0c0dd4aec8f179cb6dc4f2aea811f36b58f54"
+			"Comment": "v0.6.2-15-gd2f9ffa",
+			"Rev": "d2f9ffa1d9cf25b25191b221229effac1b6de526"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/term",
-			"Comment": "v1.3.0-676-gc59b308",
-			"Rev": "c59b308b6b2fc8112a93d64f4922b0ece01a4e6a"
+			"Comment": "v1.4.1-216-g12fef2d",
+			"Rev": "12fef2d8df4e5da024418e324f7e3c3e82220a27"
 		},
 		{
 			"ImportPath": "github.com/docopt/docopt-go",
-			"Comment": "0.6.1-1-gc5dac53",
-			"Rev": "c5dac536301992c0371c6115d998fb62944bfad3"
+			"Comment": "0.6.1-5-g854c423",
+			"Rev": "854c423c810880e30b9fecdabb12d54f4a92f9bb"
 		},
 		{
 			"ImportPath": "github.com/jehiah/go-strftime",
@@ -23,8 +23,8 @@
 		},
 		{
 			"ImportPath": "github.com/kr/pty",
-			"Comment": "release.r56-21-g53dd597",
-			"Rev": "53dd597300005d500d7136de51a5a2b8c3ab8f94"
+			"Comment": "release.r56-25-g05017fc",
+			"Rev": "05017fcccf23c823bfdea560dcc958a136e54fb7"
 		},
 		{
 			"ImportPath": "github.com/mitchellh/go-homedir",
