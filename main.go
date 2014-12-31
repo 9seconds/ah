@@ -105,7 +105,7 @@ func main() {
 	utils.Logger.WithField("arguments", arguments).Info("Parsed arguments")
 
 	defaultEnv := environments.MakeDefaultEnvironment()
-	cmdLineEnv := environments.MakeDefaultEnvironment()
+	cmdLineEnv := new(environments.Environment)
 	configEnv, err := defaultEnv.ReadFromConfig()
 	if err != nil {
 		utils.Logger.WithField("error", err).Warn("Cannot read config file")

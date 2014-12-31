@@ -186,17 +186,24 @@ func MergeEnvironments(envs ...*Environment) (result *Environment) {
 	result = new(Environment)
 
 	for _, value := range envs {
-		result.Shell = value.Shell
-		result.HistFile = value.HistFile
-		result.HistTimeFormat = value.HistTimeFormat
-		result.HomeDir = value.HomeDir
-		result.AppDir = value.AppDir
-		result.TracesDir = value.TracesDir
-		result.BookmarksDir = value.BookmarksDir
-		result.TmpDir = value.TmpDir
-		result.ConfigFileName = value.ConfigFileName
-		result.AutoCommandsFileName = value.AutoCommandsFileName
+		result.Shell = getNotEmpty(result.Shell, value.Shell)
+		result.HistFile = getNotEmpty(result.HistFile, value.HistFile)
+		result.HistTimeFormat = getNotEmpty(result.HistTimeFormat, value.HistTimeFormat)
+		result.HomeDir = getNotEmpty(result.HomeDir, value.HomeDir)
+		result.AppDir = getNotEmpty(result.AppDir, value.AppDir)
+		result.TracesDir = getNotEmpty(result.TracesDir, value.TracesDir)
+		result.BookmarksDir = getNotEmpty(result.BookmarksDir, value.BookmarksDir)
+		result.TmpDir = getNotEmpty(result.TmpDir, value.TmpDir)
+		result.ConfigFileName = getNotEmpty(result.ConfigFileName, value.ConfigFileName)
+		result.AutoCommandsFileName = getNotEmpty(result.AutoCommandsFileName, value.AutoCommandsFileName)
 	}
 
 	return
+}
+
+func getNotEmpty(first string, second string) string {
+	if second != "" {
+		return second
+	}
+	return first
 }
