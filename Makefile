@@ -69,19 +69,13 @@ prog-clean:
 	rm -f $(BUILD_PROG)
 
 update:
-	cat $(ROOT_DIR)/Godeps/Godeps.json \
-		| grep ImportPath \
-		| grep -v $(GOLANG_AH) \
-		| awk '{print $$2}' \
-		| sed 's/"//g; s/,$$//' \
+	grep -v $(GOLANG_AH) $(ROOT_DIR)/Godeps/Godeps.json \
+		| awk '/ImportPath/ {gsub(/"|,/, ""); print $$2}' \
 		| xargs -n 1 godep update
 
 upgrade_deps:
-	cat $(ROOT_DIR)/Godeps/Godeps.json \
-		| grep ImportPath \
-		| grep -v $(GOLANG_AH) \
-		| awk '{print $$2}' \
-		| sed 's/"//g; s/,$$//' \
+	grep -v $(GOLANG_AH) $(ROOT_DIR)/Godeps/Godeps.json \
+		| awk '/ImportPath/ {gsub(/"|,/, ""); print $$2}' \
 		| xargs -n 1 -P 4 go get -u
 
 # ----------------------------------------------------------------------------
