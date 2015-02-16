@@ -4,13 +4,13 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.6.4-6-g539d4dc",
-			"Rev": "539d4dc034c079a7188b5d4ca9650632d73c66e8"
+			"Comment": "v0.6.4-16-g38a6ff9",
+			"Rev": "38a6ff9215d472ce953bb9aa37b5327715c0f940"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/term",
-			"Comment": "v1.4.1-683-g990a3e3",
-			"Rev": "990a3e30fa66e7bd3df3c78c873c97c5b1310486"
+			"Comment": "v1.4.1-1085-g8b58e73",
+			"Rev": "8b58e73da429b664ed2dbec7c0caab1fb8a45ccd"
 		},
 		{
 			"ImportPath": "github.com/docopt/docopt-go",
@@ -32,7 +32,7 @@
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
-			"Rev": "5d6f7e02b7cdad63b06ab3877915532cd30073b4"
+			"Rev": "a1c4bcb6c278a41992e2f4f0f29a44b4146daa5c"
 		}
 	]
 }
