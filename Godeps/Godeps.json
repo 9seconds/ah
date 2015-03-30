@@ -1,16 +1,16 @@
 {
 	"ImportPath": "github.com/9seconds/ah",
-	"GoVersion": "go1.2.1",
+	"GoVersion": "go1.4.2",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.6.4-16-g38a6ff9",
-			"Rev": "38a6ff9215d472ce953bb9aa37b5327715c0f940"
+			"Comment": "v0.7.2-2-ge00ed35",
+			"Rev": "e00ed35f54d331c88f1867a18a7bfc4e4e4685ac"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/term",
-			"Comment": "v1.4.1-1085-g8b58e73",
-			"Rev": "8b58e73da429b664ed2dbec7c0caab1fb8a45ccd"
+			"Comment": "v1.4.1-2165-gf3a0485",
+			"Rev": "f3a048516eaef7c8438446dc2e045bf4b306c8b0"
 		},
 		{
 			"ImportPath": "github.com/docopt/docopt-go",
@@ -32,7 +32,7 @@
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
-			"Rev": "a1c4bcb6c278a41992e2f4f0f29a44b4146daa5c"
+			"Rev": "49c95bdc21843256fb6c4e0d370a05f24a0bf213"
 		}
 	]
 }
